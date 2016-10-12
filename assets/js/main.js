@@ -4,7 +4,7 @@
         height = 500,
         active = d3.select(null);
 
-    var projection = d3.geoAlbersUsa()
+    var projection = d3.geoAlbers()
         .scale(1000)
         .translate([width / 2, height / 2]);
 
@@ -32,7 +32,7 @@
             .enter().append("path")
             .attr("d", path)
             .attr("class", "feature")
-            .on("click", clicked);
+            /*.on("click", clicked)*/; //TODO uncomment for zoom
 
         g.append("path")
             .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
@@ -40,8 +40,8 @@
             .attr("d", path);
 
         d3.csv("/data/airports.csv", function (error, airports) {
-            var projection = d3.geoAlbersUsa();
-            projection.scale(995);
+            var projection = d3.geoAlbers();
+            projection.scale(990);
             var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null);
             svg.selectAll("circle")
                 .data(coordinates).enter()
