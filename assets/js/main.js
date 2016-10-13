@@ -42,14 +42,49 @@
         d3.csv("/data/airports.csv", function (error, airports) {
             var projection = d3.geoAlbers();
             projection.scale(990);
-            var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null);
+            var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null && !(isNaN(d[0]) || isNaN(d[0])));
             svg.selectAll("circle")
                 .data(coordinates).enter()
                 .append("circle")
                 .attr("cx", d => d[0])
                 .attr("cy", d => d[1])
-                .attr("r", "3px")
-                .attr("fill", "#00deff")
+                .attr("r", "2px")
+                .attr("fill", "#00deff");
+
+            d3.csv("/data/test.csv", function (error, flights) {
+                var nodeData = d3.map(airports.map(d => {
+                    var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
+                    d.x = p[0];
+                    d.y = p[1];
+                    return d;
+                }), d => d.iata);
+                var edgeData = flights.map(f => { return { "source": '$' + f.Origin, "target": '$' + f.Dest } });
+                var fbundling = d3.ForceEdgeBundling()
+                    .nodes(nodeData)
+                    .edges(edgeData);
+                var results   = fbundling();
+                var d3line = d3.line().x(d => d.x ).y(d => d.y );
+
+                results.forEach(edge_subpoint_data => {
+                    // for each of the arrays in the results
+                    // draw a line between the subdivions points for that edge
+                    var path = svg.append("path")
+                        .attr("d", d3line(edge_subpoint_data))
+                        .style("stroke-width", 1)
+                        .style("stroke", "#ff2222")
+                        .style("fill", "none")
+                        .style('stroke-opacity', 0.15); //use opacity as blending
+                    var totalLength = path.node().getTotalLength();
+                    path
+                        .attr("stroke-dasharray", totalLength + " " + totalLength)
+                        .attr("stroke-dashoffset", totalLength)
+                        .transition()
+                            .duration(2000)
+                            // .ease("linear")
+                            .attr("stroke-dashoffset", 0);
+                });
+            });
+
         })
 
     });
