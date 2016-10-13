@@ -58,6 +58,13 @@
                     d.y = p[1];
                     return d;
                 }), d => d.iata);
+
+                flights = flights.map (f => {
+                    if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                    else if (f.DepDelay > 60) f.stdDelay = 60;
+                    else f.stdDelay = f.DepDelay;
+                    return f;
+                });
                 var edgeData = flights.map(f => { return { "source": '$' + f.Origin, "target": '$' + f.Dest } });
                 var fbundling = d3.ForceEdgeBundling()
                     .nodes(nodeData)
@@ -65,15 +72,21 @@
                 var results   = fbundling();
                 var d3line = d3.line().x(d => d.x ).y(d => d.y );
 
-                results.forEach(edge_subpoint_data => {
+                var maxDelay = Math.max.apply(Math, flights.map(function(d){
+                    return d.stdDelay;
+                }));
+
+                results.forEach((edge_subpoint_data, index, array) => {
+                    var delay = flights[index].stdDelay;
                     // for each of the arrays in the results
                     // draw a line between the subdivions points for that edge
                     var path = svg.append("path")
                         .attr("d", d3line(edge_subpoint_data))
                         .style("stroke-width", 1)
-                        .style("stroke", "#ff2222")
+                        // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
+                        .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
                         .style("fill", "none")
-                        .style('stroke-opacity', 0.15); //use opacity as blending
+                        .style('stroke-opacity', 0.45); //use opacity as blending
                     var totalLength = path.node().getTotalLength();
                     path
                         .attr("stroke-dasharray", totalLength + " " + totalLength)
@@ -116,6 +129,11 @@
             .duration(750)
             .style("stroke-width", "1.5px")
             .attr("transform", "");
+    }
+
+    function percentageToHsl(percentage, hue0, hue1) {
+        var hue = (percentage * (hue1 - hue0)) + hue0;
+        return 'hsl(' + hue + ', 100%, 50%)';
     }
 
 })();
