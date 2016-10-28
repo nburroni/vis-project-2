@@ -40,68 +40,80 @@
             .attr("d", path);
 
         d3.csv("/data/airports.csv", function (error, airports) {
-            var projection = d3.geoAlbers();
-            projection.scale(990);
-            var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null && !(isNaN(d[0]) || isNaN(d[0])));
-            svg.selectAll("circle")
-                .data(coordinates).enter()
-                .append("circle")
-                .attr("cx", d => d[0])
-                .attr("cy", d => d[1])
-                .attr("r", "2px")
-                .attr("fill", "#00deff");
+            d3.json("/data/top-airports.json", function (error2, topAirports){
+                airports = airports.filter(d => {if (findWithAttr(topAirports, "name", d.iata) > -1) return d;});
+                var projection = d3.geoAlbers();
+                projection.scale(990);
+                var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null && !(isNaN(d[0]) || isNaN(d[0])));
+                svg.selectAll("circle")
+                    .data(coordinates).enter()
+                    .append("circle")
+                    .attr("cx", d => d[0])
+                    .attr("cy", d => d[1])
+                    .attr("r", "2px")
+                    .attr("fill", "#00deff")
+                    .on("mouseover", function (d){});
 
-            d3.csv("/data/test.csv", function (error, flights) {
-                var nodeData = d3.map(airports.map(d => {
-                    var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
-                    d.x = p[0];
-                    d.y = p[1];
-                    return d;
-                }), d => d.iata);
+                d3.csv("/data/2008-compressed.csv", function (error, flights) {
+                    var nodeData = d3.map(airports.map(d => {
+                        var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
+                        d.x = p[0];
+                        d.y = p[1];
+                        return d;
+                    }), d => d.iata);
+                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 500,500);
+                    flights = flights.map (f => {
+                        if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                        else if (f.DepDelay > 60) f.stdDelay = 60;
+                        else f.stdDelay = f.DepDelay;
+                        return f;
+                    });
+                    var edgeData = flights.map(f => { return { "source": '$' + f.Origin, "target": '$' + f.Dest } });
+                    var fbundling = d3.ForceEdgeBundling()
+                        .nodes(nodeData)
+                        .edges(edgeData);
+                    var results  = fbundling();
+                    var d3line = d3.line().x(d => d.x ).y(d => d.y );
 
-                flights = flights.map (f => {
-                    if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                    else if (f.DepDelay > 60) f.stdDelay = 60;
-                    else f.stdDelay = f.DepDelay;
-                    return f;
-                });
-                var edgeData = flights.map(f => { return { "source": '$' + f.Origin, "target": '$' + f.Dest } });
-                var fbundling = d3.ForceEdgeBundling()
-                    .nodes(nodeData)
-                    .edges(edgeData);
-                var results   = fbundling();
-                var d3line = d3.line().x(d => d.x ).y(d => d.y );
+                    var maxDelay = Math.max.apply(Math, flights.map(function(d){
+                        return d.stdDelay;
+                    }));
 
-                var maxDelay = Math.max.apply(Math, flights.map(function(d){
-                    return d.stdDelay;
-                }));
-
-                results.forEach((edge_subpoint_data, index, array) => {
-                    var delay = flights[index].stdDelay;
-                    // for each of the arrays in the results
-                    // draw a line between the subdivions points for that edge
-                    var path = svg.append("path")
-                        .attr("d", d3line(edge_subpoint_data))
-                        .style("stroke-width", 1)
-                        // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
-                        .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
-                        .style("fill", "none")
-                        .style('stroke-opacity', 0.45); //use opacity as blending
-                    var totalLength = path.node().getTotalLength();
-                    path
-                        .attr("stroke-dasharray", totalLength + " " + totalLength)
-                        .attr("stroke-dashoffset", totalLength)
-                        .transition()
+                    results.forEach((edge_subpoint_data, index, array) => {
+                        var delay = flights[index].stdDelay;
+                        // for each of the arrays in the results
+                        // draw a line between the subdivions points for that edge
+                        var path = svg.append("path")
+                            .attr("d", d3line(edge_subpoint_data))
+                            .style("stroke-width", 1)
+                            // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
+                            .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
+                            .style("fill", "none")
+                            .style('stroke-opacity', 0.45); //use opacity as blending
+                        var totalLength = path.node().getTotalLength();
+                        path
+                            .attr("stroke-dasharray", totalLength + " " + totalLength)
+                            .attr("stroke-dashoffset", totalLength)
+                            .transition()
                             .duration(2000)
                             // .ease("linear")
                             .attr("stroke-dashoffset", 0);
+                    });
                 });
             });
+            
 
         })
 
     });
-
+    function findWithAttr(array, attr, value) {
+        for(var i = 0; i < array.length; i += 1) {
+            if(array[i][attr] === value) {
+                return i;
+            }
+        }
+        return -1;
+    }
     function clicked(d) {
         if (active.node() === this) return reset();
         active.classed("active", false);
