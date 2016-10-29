@@ -109,11 +109,12 @@
                                 var grn = Math.floor((1 - d/60)*255);
                                 return "rgb(0, "+ grn +", 0)";
                             })
-                            .attr("d", drawArc);      // draw the arc
-                    })
-                    .on("mouseout", function (d, i){
-                        var arcs = svg.selectAll("path.arc-path").remove();
+                            .attr("d", drawArc)
+                            .on("mouseout", function (){svg.selectAll("path.arc-path").remove(); });// draw the arc
                     });
+                    // .on("mouseout", function (d, i){
+                    //     var arcs = svg.selectAll("path.arc-path").remove();
+                    // });
 
                 d3.csv("/data/2008-compressed.csv", function (error, flights) {
                     var nodeData = d3.map(airports.map(d => {
@@ -122,7 +123,7 @@
                         d.y = p[1];
                         return d;
                     }), d => d.iata);
-                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 500,500);
+                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 1500,1500);
                     flights = flights.map (f => {
                         if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
                         else if (f.DepDelay > 60) f.stdDelay = 60;
