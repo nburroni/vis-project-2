@@ -23,6 +23,7 @@
 
     var g = svg.append("g")
         .style("stroke-width", "1.5px");
+    var globalAirports = [];
 
     d3.json("/data/us.json", function (error, us) {
         if (error) throw error;
@@ -41,7 +42,8 @@
 
         d3.csv("/data/airports.csv", function (error, airports) {
             d3.json("/data/top-airports.json", function (error2, topAirports){
-                airports = airports.filter(d => {if (findWithAttr(topAirports, "name", d.iata) > -1) return d;});
+                airports = airports.filter(d => {if (findWithAttr(topAirports, "iata", d.iata) > -1) return d;});
+                globalAirports = airports;
                 var projection = d3.geoAlbers();
                 projection.scale(990);
                 var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null && !(isNaN(d[0]) || isNaN(d[0])));
@@ -52,9 +54,12 @@
                     .attr("cy", d => d[1])
                     .attr("r", "2px")
                     .attr("fill", "#00deff")
-                    .on("mouseover", function (d){
+                    .on("mouseover", function (d, i){
+                        var airport = globalAirports[i];
                         var labels = ['CarrierDelay','WeatherDelay','NASDelay','SecurityDelay','LateAircraftDelay'];
-                        var dataset = [1,2,3,4,5,6];
+                        var dataset = [airport.CarrierDelay, airport.WeatherDelay, airport.NASDelay, airport.SecurityDelay, airport.LateAircraftDelay];
+                        var total = airport.CarrierDelay + airport.WeatherDelay + airport.NASDelay + airport.SecurityDelay + airport.LateAircraftDelay;
+                        var currentAngle = 0;
                         var PI = Math.PI;
                         var arcMin = 75;        // inner radius of the first arc
                         var arcWidth = 15;      // width
@@ -70,9 +75,13 @@
                             .outerRadius(function(d, i) {
                                 return arcMin + (arcWidth);
                             })
-                            .startAngle(0 * (PI/180))
+                            .startAngle(function (d, i){
+                                var myAngle = currentAngle;
+                                currentAngle += ((dataset[i] / total) * 360 * (PI/180));
+                                return myAngle;
+                            })
                             .endAngle(function(d, i) {
-                                return i * 30 * (PI/180);
+                                return currentAngle;
                             });
 
                         // bind the data
@@ -92,7 +101,7 @@
                         // draw arcs for new data
                         arcs.enter().append("svg:path")
                             .attr("class", "arc-path")                  // assigns a class for easier selecting
-                            .attr("transform", "translate(400,200)")    // sets position--easier than setting x's and y's
+                            .attr("transform", "translate("+ d[0] + "," + d[1] + ")")    // sets position--easier than setting x's and y's
                             .attr("fill", function(d){
                                 // fill is an rgb value with the green value determined by the data
                                 // smaller numbers result in a higher green value (1 - d/60)
@@ -100,8 +109,12 @@
                                 var grn = Math.floor((1 - d/60)*255);
                                 return "rgb(0, "+ grn +", 0)";
                             })
-                            .attr("d", drawArc);      // draw the arc
+                            .attr("d", drawArc)
+                            .on("mouseout", function (){svg.selectAll("path.arc-path").remove(); });// draw the arc
                     });
+                    // .on("mouseout", function (d, i){
+                    //     var arcs = svg.selectAll("path.arc-path").remove();
+                    // });
 
                 d3.csv("/data/2008-compressed.csv", function (error, flights) {
                     var nodeData = d3.map(airports.map(d => {
@@ -110,7 +123,7 @@
                         d.y = p[1];
                         return d;
                     }), d => d.iata);
-                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 500,500);
+                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 1500,1500);
                     flights = flights.map (f => {
                         if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
                         else if (f.DepDelay > 60) f.stdDelay = 60;
@@ -131,7 +144,28 @@
                     results.forEach((edge_subpoint_data, index, array) => {
                         var flight = flights[index];
                         var delay = flight.stdDelay;
-
+                        for (var j in flight){
+                            if (j != "Origin" && j != "Dest" && j != "TailNum") flight[j] = parseInt(flight[j]);
+                        }
+                        var airport = airports[findWithAttr(airports, "iata", flight.Origin)];
+                        if (airport){
+                            if (!airport.flightCount) {
+                                airport.flightCount = 0;
+                                airport.DepDelay = 0;
+                                airport.WeatherDelay = 0;
+                                airport.CarrierDelay = 0;
+                                airport.NASDelay = 0;
+                                airport.SecurityDelay = 0;
+                                airport.LateAircraftDelay = 0;
+                            }
+                            airport.flightCount++;
+                            airport.DepDelay += (flight.DepDelay/ airport.flightCount);
+                            airport.WeatherDelay += (flight.WeatherDelay/ airport.flightCount);
+                            airport.CarrierDelay += (flight.CarrierDelay/ airport.flightCount);
+                            airport.NASDelay += (flight.NASDelay/ airport.flightCount);
+                            airport.SecurityDelay += (flight.SecurityDelay/ airport.flightCount);
+                            airport.LateAircraftDelay += (flight.LateAircraftDelay/ airport.flightCount);
+                        }
                         // for each of the arrays in the results
                         // draw a line between the subdivions points for that edge
                         var path = svg.append("path")
@@ -150,6 +184,7 @@
                             // .ease("linear")
                             .attr("stroke-dashoffset", 0);
                     });
+                    console.log(airports);
                 });
             });
 
