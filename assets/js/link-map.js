@@ -141,7 +141,7 @@
                                     div.transition()
                                         .duration(200)
                                         .style("opacity", .9);
-                                    div	.html(labels[i] + '</br>')
+                                    div	.html(labels[i] + '</br>' + Math.floor(dataset[i]) + ' mins')
                                         .style("display", "inline-block")
                                         .style("left", (d3.event.pageX) + "px")
                                         .style("top", (d3.event.pageY - 28) + "px");
