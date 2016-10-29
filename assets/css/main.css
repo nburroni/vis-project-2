@@ -18,3 +18,13 @@
     stroke-linecap: round;
     stroke-linejoin: round;
 }
+
+.node {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.link {
+    fill: none;
+    stroke: #bbb;
+}
