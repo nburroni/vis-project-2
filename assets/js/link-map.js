@@ -21,6 +21,10 @@
         .attr("height", height)
         .on("click", reset);
 
+    var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
     var g = svg.append("g")
         .style("stroke-width", "1.5px");
     var globalAirports = [];
@@ -55,62 +59,143 @@
                     .attr("r", "2px")
                     .attr("fill", "#00deff")
                     .on("mouseover", function (d, i){
-                        var airport = globalAirports[i];
-                        var labels = ['CarrierDelay','WeatherDelay','NASDelay','SecurityDelay','LateAircraftDelay'];
-                        var dataset = [airport.CarrierDelay, airport.WeatherDelay, airport.NASDelay, airport.SecurityDelay, airport.LateAircraftDelay];
-                        var total = airport.CarrierDelay + airport.WeatherDelay + airport.NASDelay + airport.SecurityDelay + airport.LateAircraftDelay;
-                        var currentAngle = 0;
-                        var PI = Math.PI;
-                        var arcMin = 75;        // inner radius of the first arc
-                        var arcWidth = 15;      // width
-                        var arcPad = 1;         // padding between arcs
+                        if (!svg.selectAll(".pie")._groups[0].length > 0){
+                            var airport = globalAirports[i];
+                            var labels = ['CarrierDelay','WeatherDelay','NASDelay','SecurityDelay','LateAircraftDelay'];
+                            var colors = ['rgb(255, 153, 51)', 'rgb(0, 0, 204)', 'rgb(102, 204, 0)', 'rgb(153, 153, 255)', 'rgb(255, 255, 51)'];
+                            var dataset = [airport.CarrierDelay, airport.WeatherDelay, airport.NASDelay, airport.SecurityDelay, airport.LateAircraftDelay];
+                            var total = airport.CarrierDelay + airport.WeatherDelay + airport.NASDelay + airport.SecurityDelay + airport.LateAircraftDelay;
+                            var currentAngle = 0;
+                            var PI = Math.PI;
+                            var arcMin = 55;        // inner radius of the first arc
+                            var arcWidth = 15;      // width
+                            var arcPad = 1;         // padding between arcs
 
-                        // arc accessor
-                        //  d and i are automatically passed to accessor functions,
-                        //  with d being the data and i the index of the data
-                        var drawArc = d3.arc()
-                            .innerRadius(function(d, i) {
-                                return  arcMin;
-                            })
-                            .outerRadius(function(d, i) {
-                                return arcMin + (arcWidth);
-                            })
-                            .startAngle(function (d, i){
-                                var myAngle = currentAngle;
-                                currentAngle += ((dataset[i] / total) * 360 * (PI/180));
-                                return myAngle;
-                            })
-                            .endAngle(function(d, i) {
-                                return currentAngle;
-                            });
+                            // arc accessor
+                            //  d and i are automatically passed to accessor functions,
+                            //  with d being the data and i the index of the data
+                            var drawArc = d3.arc()
+                                .innerRadius(function(d, i) {
+                                    return  0;
+                                })
+                                .outerRadius(function(d, i) {
+                                    return 0;
+                                })
+                                .startAngle(function (d, i){
+                                    var myAngle = currentAngle;
+                                    currentAngle += ((dataset[i] / total) * 360 * (PI/180));
+                                    return myAngle;
+                                })
+                                .endAngle(function(d, i) {
+                                    return currentAngle;
+                                });
 
-                        // bind the data
-                        var arcs = svg.selectAll("path.arc-path").data(dataset);
+                            var pie = d3.pie()
+                                .sort(null)
+                                .value(function(d) {
+                                    return d;
+                                });
 
-                        // *** update existing arcs -- redraw them ***
-                        arcs.attr("d", drawArc)
-                            .attr("fill", function(d){
-                                // we need to redefine the fills as well since we have new data,
-                                //  otherwise the colors would no longer be relative to the data
-                                //  values (and arc length). if your fills weren't relative to
-                                //  the data, this would not be necessary
-                                var grn = Math.floor((1 - d/60)*255);
-                                return "rgb(0, "+ grn +", 0)";
-                            });
+                            // var gCircle = svg.append("g").attr("transform", "translate("+ d[0] +"," + d[1] + ")");
+                            // gCircle.append("circle")
+                            //     .attr("cx", 40)
+                            //     .attr("r", arcMin + arcWidth + 20)
+                            //     .attr("cy", 40)
+                            //     // .style("fill", "none")
+                            //     .style("opacity", .3)
+                            //     .style("border", "none")
+                            // .on("mouseout", function (){
+                            //     g.remove();
+                            //     gCircle.selectAll("circle").remove();
+                            // })
+                            //;
 
-                        // draw arcs for new data
-                        arcs.enter().append("svg:path")
-                            .attr("class", "arc-path")                  // assigns a class for easier selecting
-                            .attr("transform", "translate("+ d[0] + "," + d[1] + ")")    // sets position--easier than setting x's and y's
-                            .attr("fill", function(d){
-                                // fill is an rgb value with the green value determined by the data
-                                // smaller numbers result in a higher green value (1 - d/60)
-                                // you should also look into using d3 scales to create gradients
-                                var grn = Math.floor((1 - d/60)*255);
-                                return "rgb(0, "+ grn +", 0)";
-                            })
-                            .attr("d", drawArc)
-                            .on("mouseout", function (){svg.selectAll("path.arc-path").remove(); });// draw the arc
+                            var groupChart = svg.selectAll(".pie")
+                                .data([d])
+                                .enter()
+                                .append("g")
+                                .classed("pie", true)
+                                .on("mouseleave", function (d, i){
+                                    var coordinates = [0, 0];
+                                    coordinates = d3.mouse(this);
+                                    var x = coordinates[0];
+                                    var y = coordinates[1];
+                                    if (Math.pow((x - d[0]), 2) + Math.pow((y - d[1]), 2) > Math.pow(70, 2)) this.remove();
+                                });
+
+
+                            var g = groupChart.selectAll(".arc")
+                                .data(pie(dataset))
+                                .enter().append("g")
+                                .attr("class", "arc");
+
+                            var chart = g.append("path")
+                                .attr("d", drawArc)
+                                .style("fill", function(d, i) {
+                                    return colors[i];
+                                })
+                                .attr("transform", function (){
+                                    return "translate("+ d[0] + "," + d[1] + ")";
+                                })
+                                .on('mouseenter', function (d, i){
+                                    div.transition()
+                                        .duration(200)
+                                        .style("opacity", .9);
+                                    div	.html(labels[i] + '</br>')
+                                        .style("display", "inline-block")
+                                        .style("left", (d3.event.pageX) + "px")
+                                        .style("top", (d3.event.pageY - 28) + "px");
+                                })
+                                .on("mouseleave", function (){
+                                    div.transition()
+                                        .duration(500)
+                                        .style("opacity", 0);
+                                })
+                                .transition()
+                                .delay(100)
+                                .duration(1000)
+                                .attrTween("d", arcTweenEnter);
+
+                            groupChart.append("text")
+                                .attr("x", function(d) { return d[0]; })
+                                .attr("y", function (d) { return d[1] + 20; })
+                                .attr("dy", ".35em")
+                                .attr("font-family", "sans-serif")
+                                .style("text-anchor", "middle")
+                                .attr( "fill-opacity", 0 ).transition().delay(500)
+                                .attr( "fill-opacity", 1 )
+                                .text(function(d) {
+                                    return airport.airport;
+                                });
+                            function arcTweenEnter(d) {
+                                var i = d3.interpolateNumber(0, arcMin);
+                                var j = d3.interpolateNumber(0, arcMin + 15);
+
+                                return function(t) {
+                                    var r = i(t);
+                                    var rMax = j(t),
+                                        drawArc = d3.arc()
+                                            .outerRadius(rMax)
+                                            .innerRadius(r);
+                                    return drawArc(d);
+                                };
+                            }
+
+                            function arcTweenExit(d) {
+                                var i = d3.interpolateNumber(arcMin, 0);
+                                var j = d3.interpolateNumber(arcMin + 15, 0);
+
+                                return function(t) {
+                                    var r = i(t);
+                                    var rMax = j(t),
+                                        drawArc = d3.arc()
+                                            .outerRadius(rMax)
+                                            .innerRadius(r);
+                                    return drawArc(d);
+                                };
+                            }
+                        }
+
                     });
                     // .on("mouseout", function (d, i){
                     //     var arcs = svg.selectAll("path.arc-path").remove();
@@ -123,7 +208,7 @@
                         d.y = p[1];
                         return d;
                     }), d => d.iata);
-                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 1500,1500);
+                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 500,500);
                     flights = flights.map (f => {
                         if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
                         else if (f.DepDelay > 60) f.stdDelay = 60;
