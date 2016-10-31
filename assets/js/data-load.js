@@ -17,9 +17,10 @@
 
                 let apFilters = d3.select("#filters")
                     .append("div")
-                    .attr("id", "airport-filters");
+                    .attr("id", "airport-filters")
+                    .attr("class", "row");
 
-                apFilters.append("select")
+                apFilters.append.append("select")
                     .attr("id", "ap-select")
                     .attr("multiple", "multiple")
                     .selectAll("option")
@@ -50,7 +51,8 @@
 
                 let timeFilters = d3.select("#filters")
                     .append("div")
-                    .attr("id", "time-filters");
+                    .attr("id", "time-filters")
+                    .attr("class", "row");
 
                 var crunchData = function () {
                     var nodeData = airports.map(d => {
@@ -146,17 +148,18 @@
                             return f;
                         });
 
-                    var averageEdgeDataR = routeAverages.map(f => {
-                        return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
-                    });
+                    const mapper = f => {
+                        f.source = f.Origin;
+                        f.target = f.Dest;
+                        f.value = Math.round(Math.sqrt(f.stdDelay));
+                        return f;
+                    };
 
-                    var averageEdgeDataFN = fnumAverages.map(f => {
-                        return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
-                    });
+                    var averageEdgeDataR = routeAverages.map(mapper);
 
-                    var edgeData = flights.map(f => {
-                        return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
-                    });
+                    var averageEdgeDataFN = fnumAverages.map(mapper);
+
+                    var edgeData = flights.map(mapper);
 
                     window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
                 };
