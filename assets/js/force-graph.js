@@ -17,9 +17,9 @@
             super("ForceGraph");
         }
 
-        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
-            nodeData = nodeData.filter(n => averageEdgeData.filter(e => n.iata == e.source || n.iata == e.target).length > 0);
-            var graph = {nodes: nodeData, links: averageEdgeData};
+        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
+            nodeData = nodeData.filter(n => averageEdgeDataR.filter(e => n.iata == e.source || n.iata == e.target).length > 0);
+            var graph = {nodes: nodeData, links: averageEdgeDataR};
 
             var nodes = graph.nodes,
                 nodeById = d3.map(nodes, function (d) {

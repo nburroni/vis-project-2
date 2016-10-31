@@ -23,7 +23,7 @@
             super("WeekVis");
         }
 
-        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
+        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
 
             let sorting = (a, b) => d3.ascending(parseInt(a), parseInt(b));
 
