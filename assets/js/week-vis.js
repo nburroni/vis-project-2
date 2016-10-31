@@ -11,6 +11,8 @@
         hourStart = padding + 20,
         hourEnd = padding + weekHeight;
 
+    const opTranDuration = 250;
+
     const svg = d3.select("#week").append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -62,14 +64,16 @@
                         selection.classed("clicked", !selection.classed("clicked"));
                     })
                     .on("mouseover", h => {
-                        svg.selectAll(`.hour-of-day.h${h}`).transition(`2${h}`).duration(400).attr("opacity", 1);
-                        svg.selectAll(`.hour-of-day:not(.clicked):not(.h${h})`).transition(`0${h}`).duration(400).attr("opacity", .2);
+                        if (svg.selectAll('.hour-of-day.clicked').size() > 0)
+                            svg.selectAll(`.hour-of-day.h${h}`).transition(`2${h}`).duration(opTranDuration).attr("opacity", 1);
+                        else
+                            svg.selectAll(`.hour-of-day:not(.clicked):not(.h${h})`).transition(`0${h}`).duration(opTranDuration).attr("opacity", .2);
                     })
                     .on("mouseout", h => {
                         if (svg.selectAll('.hour-of-day.clicked').size() > 0)
-                            svg.selectAll(`.hour-of-day:not(.clicked)`).transition(`1${h}`).duration(300).attr("opacity", .2);
+                            svg.selectAll(`.hour-of-day:not(.clicked).h${h}`).transition(`1${h}`).duration(opTranDuration).attr("opacity", .2);
                         else
-                            svg.selectAll(`.hour-of-day:not(.h${h})`).transition(`3${h}`).duration(300).attr("opacity", 1);
+                            svg.selectAll(`.hour-of-day`).transition(`3${h}`).duration(opTranDuration).attr("opacity", 1);
                     });
 
                 svg.append("g")
@@ -126,6 +130,7 @@
                 })).enter()
                 .append("rect")
                 .attr("class", d => `hour-of-day h${d.hour}`)
+                .attr("opacity", 1)
                 .attr("x", d => dayScale(d.day))
                 .attr("y", d => hourScale(d.hour - 0.5))
                 .attr("width", d => dayScale(d.day + 1) - dayScale(d.day))
@@ -133,6 +138,15 @@
                 .attr("fill", d => defaultPastelHslScale(d.value.avgDelay / 60));
 
             drawWeekLines();
+
+            svg.append("g")
+                .attr("transform", `translate(${padding}, ${hourEnd + 25})`)
+                .append("text")
+                .text("Clear selection")
+                .classed("hoverable", true)
+                .on("click", () => {
+                    svg.selectAll(`.hour-of-day`).classed("clicked", false).transition(`clear`).duration(opTranDuration).attr("opacity", 1);
+                })
 
         }
     }

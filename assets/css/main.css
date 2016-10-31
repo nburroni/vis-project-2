@@ -45,15 +45,18 @@ text {
 }
 
 .axis text {
-    cursor: pointer;
     font-size: 14px;
+}
+
+.hoverable, .axis text {
+    cursor: pointer;
     opacity: .9;
 }
 
-.axis text:hover {
+.hoverable:hover, .axis text:hover {
     opacity: .7;
 }
 
-.axis text:active {
+.hoverable:active, .axis text:active {
     opacity: 1;
 }
