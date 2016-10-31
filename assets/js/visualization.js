@@ -4,11 +4,11 @@ class Visualization {
         this.name = name;
     }
 
-    setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection) {
+    setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
         throw new NotImplementedError("Function setData not implemented for " + this.name + ".")
     }
 
-    dataFiltered(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection) {
+    dataFiltered(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
         throw new NotImplementedError("Function dataFiltered not implemented for " + this.name + ".")
     }
 

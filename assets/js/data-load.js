@@ -6,7 +6,7 @@
         if (error) throw error;
         d3.json(dataPath + "top-airports.json", function (error, topAirports) {
             if (error) throw error;
-            d3.csv(dataPath + "2008-1-average.csv", function (error, flights) {
+            d3.csv(dataPath + "2008-compressed.csv", function (error, flights) {
                 if (error) throw error;
 
                 var projection = d3.geoAlbers();
@@ -67,11 +67,11 @@
                     });
 
                 var averageEdgeData = routeAverages.map(f => {
-                    return { "source": f.Origin, "target": f.Dest, "value": f.stdDelay }
+                    return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
                 });
 
                 var edgeData = flights.map(f => {
-                    return { "source": f.Origin, "target": f.Dest, "value": f.stdDelay }
+                    return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
                 });
 
                 window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection))

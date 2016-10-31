@@ -17,7 +17,7 @@
             super("ForceGraph");
         }
 
-        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection) {
+        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
             var graph = {nodes: nodeData, links: averageEdgeData};
 
             var nodes = graph.nodes,

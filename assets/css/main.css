@@ -39,3 +39,21 @@ div.tooltip {
     fill: none;
     stroke: #bbb;
 }
+
+text {
+    font-family: sans-serif;
+}
+
+.axis text {
+    cursor: pointer;
+    font-size: 14px;
+    opacity: .9;
+}
+
+.axis text:hover {
+    opacity: .7;
+}
+
+.axis text:active {
+    opacity: 1;
+}
