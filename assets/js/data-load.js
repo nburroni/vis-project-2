@@ -74,10 +74,10 @@
                         let routeKeyAlt = f.Dest + "-" + f.Origin;
                         if (!flightApKeys[routeKeyAlt]) {
                             if (!flightApKeys[routeKey]) {
-                                flightNumberKeys[routeKey] = Object.assign({}, f);
-                                flightNumberKeys[routeKey].DepDelay = 0;
-                                flightNumberKeys[routeKey].delayCount = 1;
-                                flightNumberKeys[routeKey].delayTotal = parseFloat(f.DepDelay);
+                                flightApKeys[routeKey] = Object.assign({}, f);
+                                flightApKeys[routeKey].DepDelay = 0;
+                                flightApKeys[routeKey].delayCount = 1;
+                                flightApKeys[routeKey].delayTotal = parseFloat(f.DepDelay);
                             } else {
                                 flightApKeys[routeKey].delayCount++;
                                 flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
