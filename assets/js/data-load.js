@@ -21,7 +21,10 @@
                         .attr("id", "airport-filters")
                         .attr("class", "row");
 
-                    apFilters.append.append("select")
+                    let apNameFilter = apFilters.append("div").attr("class", "col-md-3");
+
+                    apNameFilter.append("span").html("Airports: ");
+                    apNameFilter.append("select")
                         .attr("id", "ap-select")
                         .attr("multiple", "multiple")
                         .selectAll("option")
@@ -71,13 +74,10 @@
                         let routeKeyAlt = f.Dest + "-" + f.Origin;
                         if (!flightApKeys[routeKeyAlt]) {
                             if (!flightApKeys[routeKey]) {
-                                flightApKeys[routeKey] = {
-                                    Origin: f.Origin,
-                                    Dest: f.Dest,
-                                    DepDelay: 0,
-                                    delayCount: 1,
-                                    delayTotal: parseFloat(f.DepDelay)
-                                }
+                                flightNumberKeys[routeKey] = Object.assign({}, f);
+                                flightNumberKeys[routeKey].DepDelay = 0;
+                                flightNumberKeys[routeKey].delayCount = 1;
+                                flightNumberKeys[routeKey].delayTotal = parseFloat(f.DepDelay);
                             } else {
                                 flightApKeys[routeKey].delayCount++;
                                 flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
@@ -92,13 +92,10 @@
                     flights.forEach(f => {
                         let fNum = f.FlightNum;
                         if (!flightNumberKeys[fNum]) {
-                            flightNumberKeys[fNum] = {
-                                Origin: f.Origin,
-                                Dest: f.Dest,
-                                DepDelay: 0,
-                                delayCount: 1,
-                                delayTotal: parseFloat(f.DepDelay)
-                            }
+                            flightNumberKeys[fNum] = Object.assign({}, f);
+                            flightNumberKeys[fNum].DepDelay = 0;
+                            flightNumberKeys[fNum].delayCount = 1;
+                            flightNumberKeys[fNum].delayTotal = parseFloat(f.DepDelay);
                         } else {
                             flightNumberKeys[fNum].delayCount++;
                             flightNumberKeys[fNum].delayTotal += parseFloat(f.DepDelay);

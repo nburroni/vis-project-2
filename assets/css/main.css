@@ -60,3 +60,10 @@ text {
 .hoverable:active, .axis text:active {
     opacity: 1;
 }
+
+#filters {
+    margin: 15px;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+}
