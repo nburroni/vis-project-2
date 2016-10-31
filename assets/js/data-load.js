@@ -11,6 +11,10 @@
 
                 var projection = d3.geoAlbers();
                 projection.scale(990);
+
+                var topAirportsByIata = d3.map(topAirports, a => a.iata);
+                airports = airports.filter(a => topAirportsByIata.get(a.iata));
+
                 var nodeData = airports.map(d => {
                     var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
                     d.x = p[0];
@@ -18,9 +22,6 @@
                     d.id = d.iata;
                     return d;
                 });
-
-                var topAirportsByIata = d3.map(topAirports, a => a.iata);
-                airports = airports.filter(a => topAirportsByIata.get(a.iata));
 
                 var flightApKeys = {};
                 flights.forEach(f => {
@@ -67,7 +68,7 @@
                     });
 
                 var averageEdgeData = routeAverages.map(f => {
-                    return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
+                    return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
                 });
 
                 var edgeData = flights.map(f => {

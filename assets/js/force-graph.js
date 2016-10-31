@@ -7,7 +7,7 @@
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     var simulation = d3.forceSimulation()
-        .force("link", d3.forceLink().distance(10).strength(0.5))
+        .force("link", d3.forceLink().distance(500).strength(0.75))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -18,6 +18,7 @@
         }
 
         setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeData, projection, rawFlights) {
+            nodeData = nodeData.filter(n => averageEdgeData.filter(e => n.iata == e.source || n.iata == e.target).length > 0);
             var graph = {nodes: nodeData, links: averageEdgeData};
 
             var nodes = graph.nodes,
@@ -45,12 +46,13 @@
                 .data(nodes.filter(function (d) {
                     return d.id;
                 }))
-                .enter().append("circle")
+                .enter().append("g");
+
+            node
+                .append("circle")
                 .attr("class", "node")
-                .attr("r", 15)
-                .attr("fill", function (d) {
-                    return color(d.group);
-                })
+                .attr("r", 25)
+                .attr("fill", "#1f77b4")
                 .call(d3.drag()
                     .on("start", dragstarted)
                     .on("drag", dragged)
@@ -65,8 +67,9 @@
                 .text(function (d) {
                     return d.id;
                 })
-                .attr("x", "50%")
-                .attr("y", "50%")
+                .attr("x", "0")
+                .attr("y", "0")
+                .attr("pointer-events", "none")
                 .attr("font-size", "1rem")
                 .attr("text-anchor", "middle")
                 .attr("fill", "white")
