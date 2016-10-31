@@ -15,21 +15,80 @@
                 var topAirportsByIata = d3.map(topAirports, a => a.iata);
                 airports = airports.filter(a => topAirportsByIata.get(a.iata));
 
-                var nodeData = airports.map(d => {
-                    var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
-                    d.x = p[0];
-                    d.y = p[1];
-                    d.id = d.iata;
-                    return d;
-                });
+                let apFilters = d3.select("#filters")
+                    .append("div")
+                    .attr("id", "airport-filters");
 
-                var flightApKeys = {};
-                flights.forEach(f => {
-                    let routeKey = f.Origin + "-" + f.Dest;
-                    let routeKeyAlt = f.Dest + "-" + f.Origin;
-                    if (!flightApKeys[routeKeyAlt]) {
-                        if (!flightApKeys[routeKey]) {
-                            flightApKeys[routeKey] = {
+                apFilters.append("select")
+                    .attr("id", "ap-select")
+                    .attr("multiple", "multiple")
+                    .selectAll("option")
+                    .data(airports).enter()
+                    .append("option")
+                    .attr("value", d => d.iata)
+                    .html(d => d.airport);
+
+                const select = $('select#ap-select');
+                select.multiselect({
+                    maxHeight: 500,
+                    includeSelectAllOption: true,
+                    enableFiltering: true,
+                    filterBehavior: 'both',
+                    enableCaseInsensitiveFiltering: true,
+                    onChange: function(option, checked, select) {
+                        console.log('Changed option ' + $(option).val() + '.');
+                    },
+                    onSelectAll: function() {
+                        console.log('All selected!');
+                    },
+                    onDeselectAll: function() {
+                        console.log('All DEselected!');
+                    }
+                });
+                select.multiselect('selectAll', false);
+                select.multiselect('updateButtonText');
+
+                let timeFilters = d3.select("#filters")
+                    .append("div")
+                    .attr("id", "time-filters");
+
+                var crunchData = function () {
+                    var nodeData = airports.map(d => {
+                        var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
+                        d.x = p[0];
+                        d.y = p[1];
+                        d.id = d.iata;
+                        return d;
+                    });
+
+                    var flightApKeys = {};
+                    flights.forEach(f => {
+                        let routeKey = f.Origin + "-" + f.Dest;
+                        let routeKeyAlt = f.Dest + "-" + f.Origin;
+                        if (!flightApKeys[routeKeyAlt]) {
+                            if (!flightApKeys[routeKey]) {
+                                flightApKeys[routeKey] = {
+                                    Origin: f.Origin,
+                                    Dest: f.Dest,
+                                    DepDelay: 0,
+                                    delayCount: 1,
+                                    delayTotal: parseFloat(f.DepDelay)
+                                }
+                            } else {
+                                flightApKeys[routeKey].delayCount++;
+                                flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
+                            }
+                        } else {
+                            flightApKeys[routeKeyAlt].delayCount++;
+                            flightApKeys[routeKeyAlt].delayTotal += parseFloat(f.DepDelay);
+                        }
+                    });
+
+                    var flightNumberKeys = {};
+                    flights.forEach(f => {
+                        let fNum = f.FlightNum;
+                        if (!flightNumberKeys[fNum]) {
+                            flightNumberKeys[fNum] = {
                                 Origin: f.Origin,
                                 Dest: f.Dest,
                                 DepDelay: 0,
@@ -37,90 +96,72 @@
                                 delayTotal: parseFloat(f.DepDelay)
                             }
                         } else {
-                            flightApKeys[routeKey].delayCount++;
-                            flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
+                            flightNumberKeys[fNum].delayCount++;
+                            flightNumberKeys[fNum].delayTotal += parseFloat(f.DepDelay);
                         }
-                    } else {
-                        flightApKeys[routeKeyAlt].delayCount++;
-                        flightApKeys[routeKeyAlt].delayTotal += parseFloat(f.DepDelay);
-                    }
-                });
+                    });
 
-                var flightNumberKeys = {};
-                flights.forEach(f => {
-                    let fNum = f.FlightNum;
-                    if (!flightNumberKeys[fNum]) {
-                        flightNumberKeys[fNum] = {
-                            Origin: f.Origin,
-                            Dest: f.Dest,
-                            DepDelay: 0,
-                            delayCount: 1,
-                            delayTotal: parseFloat(f.DepDelay)
+                    var routeAverages = [];
+                    for (let k in flightApKeys) {
+                        if (flightApKeys.hasOwnProperty(k)) {
+                            let f = flightApKeys[k];
+                            f.DepDelay = f.delayTotal / f.delayCount;
+                            routeAverages.push(f);
                         }
-                    } else {
-                        flightNumberKeys[fNum].delayCount++;
-                        flightNumberKeys[fNum].delayTotal += parseFloat(f.DepDelay);
                     }
-                });
 
-                var routeAverages = [];
-                for (let k in flightApKeys) {
-                    if (flightApKeys.hasOwnProperty(k)) {
-                        let f = flightApKeys[k];
-                        f.DepDelay = f.delayTotal / f.delayCount;
-                        routeAverages.push(f);
+                    var fnumAverages = [];
+                    for (let k in flightNumberKeys) {
+                        if (flightNumberKeys.hasOwnProperty(k)) {
+                            let f = flightNumberKeys[k];
+                            f.DepDelay = f.delayTotal / f.delayCount;
+                            fnumAverages.push(f);
+                        }
                     }
-                }
 
-                var fnumAverages = [];
-                for (let k in flightNumberKeys) {
-                    if (flightNumberKeys.hasOwnProperty(k)) {
-                        let f = flightNumberKeys[k];
-                        f.DepDelay = f.delayTotal / f.delayCount;
-                        fnumAverages.push(f);
-                    }
-                }
+                    routeAverages = routeAverages
+                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
+                        .map(f => {
+                            if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                            else if (f.DepDelay > 60) f.stdDelay = 60;
+                            else f.stdDelay = f.DepDelay;
+                            return f;
+                        });
 
-                routeAverages = routeAverages
-                    .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
-                    .map(f => {
-                        if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                        else if (f.DepDelay > 60) f.stdDelay = 60;
-                        else f.stdDelay = f.DepDelay;
-                        return f;
+                    fnumAverages = fnumAverages
+                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
+                        .map(f => {
+                            if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                            else if (f.DepDelay > 60) f.stdDelay = 60;
+                            else f.stdDelay = f.DepDelay;
+                            return f;
+                        });
+
+                    flights = flights
+                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
+                        .map(f => {
+                            if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                            else if (f.DepDelay > 60) f.stdDelay = 60;
+                            else f.stdDelay = f.DepDelay;
+                            return f;
+                        });
+
+                    var averageEdgeDataR = routeAverages.map(f => {
+                        return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
                     });
 
-                fnumAverages = fnumAverages
-                    .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
-                    .map(f => {
-                        if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                        else if (f.DepDelay > 60) f.stdDelay = 60;
-                        else f.stdDelay = f.DepDelay;
-                        return f;
+                    var averageEdgeDataFN = fnumAverages.map(f => {
+                        return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
                     });
 
-                flights = flights
-                    .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
-                    .map(f => {
-                        if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                        else if (f.DepDelay > 60) f.stdDelay = 60;
-                        else f.stdDelay = f.DepDelay;
-                        return f;
+                    var edgeData = flights.map(f => {
+                        return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
                     });
 
-                var averageEdgeDataR = routeAverages.map(f => {
-                    return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
-                });
+                    window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
+                };
 
-                var averageEdgeDataFN = fnumAverages.map(f => {
-                    return {"source": f.Origin, "target": f.Dest, "value": Math.round(Math.sqrt(f.stdDelay))}
-                });
-
-                var edgeData = flights.map(f => {
-                    return {"source": f.Origin, "target": f.Dest, "value": f.stdDelay}
-                });
-
-                window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
+                crunchData();
 
             });
         });
