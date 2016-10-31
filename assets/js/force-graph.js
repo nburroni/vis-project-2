@@ -58,11 +58,6 @@
                     .on("drag", dragged)
                     .on("end", dragended));
 
-            node.append("title")
-                .text(function (d) {
-                    return d.id;
-                });
-
             node.append("text")
                 .text(function (d) {
                     return d.id;

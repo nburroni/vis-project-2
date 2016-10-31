@@ -26,17 +26,23 @@
                 var flightApKeys = {};
                 flights.forEach(f => {
                     let routeKey = f.Origin + "-" + f.Dest;
-                    if (!flightApKeys[routeKey]) {
-                        flightApKeys[routeKey] = {
-                            Origin: f.Origin,
-                            Dest: f.Dest,
-                            DepDelay: 0,
-                            delayCount: 1,
-                            delayTotal: parseFloat(f.DepDelay)
+                    let routeKeyAlt = f.Dest + "-" + f.Origin;
+                    if (!flightApKeys[routeKeyAlt]) {
+                        if (!flightApKeys[routeKey]) {
+                            flightApKeys[routeKey] = {
+                                Origin: f.Origin,
+                                Dest: f.Dest,
+                                DepDelay: 0,
+                                delayCount: 1,
+                                delayTotal: parseFloat(f.DepDelay)
+                            }
+                        } else {
+                            flightApKeys[routeKey].delayCount++;
+                            flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
                         }
                     } else {
-                        flightApKeys[routeKey].delayCount++;
-                        flightApKeys[routeKey].delayTotal += parseFloat(f.DepDelay);
+                        flightApKeys[routeKeyAlt].delayCount++;
+                        flightApKeys[routeKeyAlt].delayTotal += parseFloat(f.DepDelay);
                     }
                 });
 
