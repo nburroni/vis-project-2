@@ -27,39 +27,151 @@
 
     var g = svg.append("g")
         .style("stroke-width", "1.5px");
+    var scale;
+    var translate;
+    var zoomed = false;
     var globalAirports = [];
 
-    d3.json("/data/us.json", function (error, us) {
-        if (error) throw error;
+    class LinkMap extends Visualization {
+        constructor() {
+            super("LinkMap");
+        }
+        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
+            d3.json("/data/us.json", function (error, us) {
+                console.log ("Got airports");
+                if (error) throw error;
 
-        g.selectAll("path")
-            .data(topojson.feature(us, us.objects.states).features)
-            .enter().append("path")
-            .attr("d", path)
-            .attr("class", "feature")
-            /*.on("click", clicked)*/; //TODO uncomment for zoom
+                g.selectAll("path")
+                    .data(topojson.feature(us, us.objects.states).features)
+                    .enter().append("path")
+                    .attr("d", path)
+                    .attr("class", "feature")
+                .on("click", clicked); //TODO uncomment for zoom
 
-        g.append("path")
-            .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
-            .attr("class", "mesh")
-            .attr("d", path);
+                g.append("path")
+                    .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
+                    .attr("class", "mesh")
+                    .attr("d", path);
 
-        d3.csv("/data/airports.csv", function (error, airports) {
-            d3.json("/data/top-airports.json", function (error2, topAirports){
-                airports = airports.filter(d => {if (findWithAttr(topAirports, "iata", d.iata) > -1) return d;});
                 globalAirports = airports;
                 var projection = d3.geoAlbers();
                 projection.scale(990);
                 var coordinates = airports.map(d => projection([parseFloat(d.long), parseFloat(d.lat)])).filter(d => d != null && !(isNaN(d[0]) || isNaN(d[0])));
+
+                var nodeData = d3.map(airports.map(d => {
+                    var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
+                    d.x = p[0];
+                    d.y = p[1];
+                    return d;
+                }), d => d.iata);
+                flights = averageEdgeDataR;
+                console.log ("Iterate flights");
+                flights = flights.map (f => {
+                    if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                    else if (f.DepDelay > 100) f.stdDelay = 100;
+                    else f.stdDelay = f.DepDelay;
+                    return f;
+                });
+                console.log ("Calculate bundles");
+
+                var fbundling = d3.ForceEdgeBundling()
+                    //.iterations(10)
+                    .nodes(nodeData)
+                    .edges(averageEdgeDataR);
+                console.log ("Finished step 2");
+
+                var t0 = performance.now();
+
+                var results  = fbundling();
+
+                var t1 = performance.now();
+                console.log("Call to doSomething took " + (t1 - t0)/1000 + " seconds.");
+                console.log ("Finished step 3");
+
+                var d3line = d3.line().x(d => d.x ).y(d => d.y );
+                console.log ("Finished step 4");
+
+                var maxDelay = Math.max.apply(Math, flights.map(function(d){
+                    return d.stdDelay;
+                }));
+
+                console.log ("Draw paths");
+
+                results.forEach((edge_subpoint_data, index, array) => {
+                    var flight = flights[index];
+                    var delay = flight.stdDelay;
+                    for (var j in flight){
+                        if (j != "Origin" && j != "Dest" && j != "TailNum") flight[j] = parseInt(flight[j]);
+                    }
+                    var airport = airports[findWithAttr(airports, "iata", flight.Origin)];
+                    if (airport){
+                        if (!airport.flightCount) {
+                            airport.flightCount = 0;
+                            airport.DepDelay = 0;
+                            airport.WeatherDelay = 0;
+                            airport.CarrierDelay = 0;
+                            airport.NASDelay = 0;
+                            airport.SecurityDelay = 0;
+                            airport.LateAircraftDelay = 0;
+                        }
+                        airport.flightCount++;
+                        airport.DepDelay += (flight.DepDelay);
+                        airport.WeatherDelay += (flight.WeatherDelay);
+                        airport.CarrierDelay += (flight.CarrierDelay);
+                        airport.NASDelay += (flight.NASDelay);
+                        airport.SecurityDelay += (flight.SecurityDelay);
+                        airport.LateAircraftDelay += (flight.LateAircraftDelay);
+                    }
+                    // for each of the arrays in the results
+                    // draw a line between the subdivions points for that edge
+                    var path = svg.append("path")
+                        .attr("d", d3line(edge_subpoint_data))
+                        .style("stroke-width", 1)
+                        .attr("class", flight.Origin + " " + flight.Dest + " flight")
+                        // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
+                        .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
+                        .style("fill", "none")
+                        .style('stroke-opacity', 0.75) //use opacity as blending
+                        .on("click", function (d){
+                            console.log (d);
+                        });
+                    var totalLength = path.node().getTotalLength();
+                    path
+                        .attr("stroke-dasharray", totalLength + " " + totalLength)
+                        .attr("stroke-dashoffset", totalLength)
+                        .transition()
+                        .duration(2000)
+                        // .ease("linear")
+                        .attr("stroke-dashoffset", 0);
+                });
+                airports.forEach(function (d){
+                    d.DepDelay = d.DepDelay / d.flightCount;
+                    d.WeatherDelay = d.WeatherDelay / d.flightCount;
+                    d.CarrierDelay = d.CarrierDelay / d.flightCount;
+                    d.NASDelay = d.NASDelay / d.flightCount;
+                    d.SecurityDelay = d.SecurityDelay / d.flightCount;
+                    d.LateAircraftDelay = d.LateAircraftDelay / d.flightCount;
+                });
                 svg.selectAll("circle")
                     .data(coordinates).enter()
                     .append("circle")
                     .attr("cx", d => d[0])
                     .attr("cy", d => d[1])
-                    .attr("r", "2px")
+                    .attr("r", "4px")
                     .attr("fill", "#00deff")
                     .on("mouseover", function (d, i){
+                        svg.selectAll("path.flight:not(." + airports[i].iata + ")")
+                            .classed("transparency", true)
+                            .classed("not-transparency", false);
+                    })
+                    .on("mouseleave", function (d, i){
+                        svg.selectAll("path.flight:not(." + airports[i].iata + ")")
+                            .classed("transparency", false)
+                            .classed("not-transparency", true);
+                    })
+                    .on("click", function (d, i){
                         if (!svg.selectAll(".pie")._groups[0].length > 0){
+                            console.log (d3.event.pageX + " " + d3.event.pageY);
                             var airport = globalAirports[i];
                             var labels = ['CarrierDelay','WeatherDelay','NASDelay','SecurityDelay','LateAircraftDelay'];
                             var colors = ['rgb(255, 153, 51)', 'rgb(0, 0, 204)', 'rgb(102, 204, 0)', 'rgb(153, 153, 255)', 'rgb(255, 255, 51)'];
@@ -96,20 +208,6 @@
                                     return d;
                                 });
 
-                            // var gCircle = svg.append("g").attr("transform", "translate("+ d[0] +"," + d[1] + ")");
-                            // gCircle.append("circle")
-                            //     .attr("cx", 40)
-                            //     .attr("r", arcMin + arcWidth + 20)
-                            //     .attr("cy", 40)
-                            //     // .style("fill", "none")
-                            //     .style("opacity", .3)
-                            //     .style("border", "none")
-                            // .on("mouseout", function (){
-                            //     g.remove();
-                            //     gCircle.selectAll("circle").remove();
-                            // })
-                            //;
-
                             var groupChart = svg.selectAll(".pie")
                                 .data([d])
                                 .enter()
@@ -120,9 +218,20 @@
                                     coordinates = d3.mouse(this);
                                     var x = coordinates[0];
                                     var y = coordinates[1];
-                                    if (Math.pow((x - d[0]), 2) + Math.pow((y - d[1]), 2) > Math.pow(70, 2)) this.remove();
+                                    if (zoomed){
+                                        var rectangle = this.getBBox();
+                                        if (Math.pow((x - (rectangle.x + rectangle.width/2)), 2) + Math.pow((y - (rectangle.y + rectangle.height/2)), 2) > Math.pow(70, 2)) {
+                                            svg.selectAll(".arc-path, text")
+                                                .classed("transparency", true);
+                                            setTimeout(() => svg.selectAll(".pie").remove(), 1000);
+                                        }
+                                    }
+                                    else if (Math.pow((x - d[0]), 2) + Math.pow((y - d[1]), 2) > Math.pow(70, 2)) {
+                                        svg.selectAll(".arc-path, text")
+                                            .classed("transparency", true);
+                                        setTimeout(() => svg.selectAll(".pie").remove(), 1000);
+                                    }
                                 });
-
 
                             var g = groupChart.selectAll(".arc")
                                 .data(pie(dataset))
@@ -131,13 +240,16 @@
 
                             var chart = g.append("path")
                                 .attr("d", drawArc)
+                                .classed("arc-path", true)
                                 .style("fill", function(d, i) {
                                     return colors[i];
                                 })
                                 .attr("transform", function (){
-                                    return "translate("+ d[0] + "," + d[1] + ")";
-                                })
-                                .on('mouseenter', function (d, i){
+                                    var j = d;
+                                    return "translate("+ d3.event.pageX + "," + d3.event.pageY + ")";
+                                });
+
+                            chart.on('mouseenter', function (d, i){
                                     div.transition()
                                         .duration(200)
                                         .style("opacity", .9);
@@ -157,8 +269,8 @@
                                 .attrTween("d", arcTweenEnter);
 
                             groupChart.append("text")
-                                .attr("x", function(d) { return d[0]; })
-                                .attr("y", function (d) { return d[1] + 20; })
+                                .attr("x", function(d) { return d3.event.pageX; })
+                                .attr("y", function (d) { return d3.event.pageY + 20; })
                                 .attr("dy", ".35em")
                                 .attr("font-family", "sans-serif")
                                 .style("text-anchor", "middle")
@@ -180,7 +292,11 @@
                                     return drawArc(d);
                                 };
                             }
-
+                        }
+                        else {
+                            svg.selectAll(".arc-path, text")
+                                .classed("transparency", true);
+                            setTimeout(() => svg.selectAll(".pie").remove(), 1000);
                             function arcTweenExit(d) {
                                 var i = d3.interpolateNumber(arcMin, 0);
                                 var j = d3.interpolateNumber(arcMin + 15, 0);
@@ -197,86 +313,13 @@
                         }
 
                     });
-                    // .on("mouseout", function (d, i){
-                    //     var arcs = svg.selectAll("path.arc-path").remove();
-                    // });
-
-                d3.csv("/data/2008-compressed.csv", function (error, flights) {
-                    var nodeData = d3.map(airports.map(d => {
-                        var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
-                        d.x = p[0];
-                        d.y = p[1];
-                        return d;
-                    }), d => d.iata);
-                    flights = flights.splice(Math.floor(Math.random()*flights.length) - 500,500);
-                    flights = flights.map (f => {
-                        if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                        else if (f.DepDelay > 60) f.stdDelay = 60;
-                        else f.stdDelay = f.DepDelay;
-                        return f;
-                    });
-                    var edgeData = flights.map(f => { return { "source": '$' + f.Origin, "target": '$' + f.Dest } });
-                    var fbundling = d3.ForceEdgeBundling()
-                        .nodes(nodeData)
-                        .edges(edgeData);
-                    var results  = fbundling();
-                    var d3line = d3.line().x(d => d.x ).y(d => d.y );
-
-                    var maxDelay = Math.max.apply(Math, flights.map(function(d){
-                        return d.stdDelay;
-                    }));
-
-                    results.forEach((edge_subpoint_data, index, array) => {
-                        var flight = flights[index];
-                        var delay = flight.stdDelay;
-                        for (var j in flight){
-                            if (j != "Origin" && j != "Dest" && j != "TailNum") flight[j] = parseInt(flight[j]);
-                        }
-                        var airport = airports[findWithAttr(airports, "iata", flight.Origin)];
-                        if (airport){
-                            if (!airport.flightCount) {
-                                airport.flightCount = 0;
-                                airport.DepDelay = 0;
-                                airport.WeatherDelay = 0;
-                                airport.CarrierDelay = 0;
-                                airport.NASDelay = 0;
-                                airport.SecurityDelay = 0;
-                                airport.LateAircraftDelay = 0;
-                            }
-                            airport.flightCount++;
-                            airport.DepDelay += (flight.DepDelay/ airport.flightCount);
-                            airport.WeatherDelay += (flight.WeatherDelay/ airport.flightCount);
-                            airport.CarrierDelay += (flight.CarrierDelay/ airport.flightCount);
-                            airport.NASDelay += (flight.NASDelay/ airport.flightCount);
-                            airport.SecurityDelay += (flight.SecurityDelay/ airport.flightCount);
-                            airport.LateAircraftDelay += (flight.LateAircraftDelay/ airport.flightCount);
-                        }
-                        // for each of the arrays in the results
-                        // draw a line between the subdivions points for that edge
-                        var path = svg.append("path")
-                            .attr("d", d3line(edge_subpoint_data))
-                            .style("stroke-width", 1)
-                            // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
-                            .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
-                            .style("fill", "none")
-                            .style('stroke-opacity', 0.45); //use opacity as blending
-                        var totalLength = path.node().getTotalLength();
-                        path
-                            .attr("stroke-dasharray", totalLength + " " + totalLength)
-                            .attr("stroke-dashoffset", totalLength)
-                            .transition()
-                            .duration(2000)
-                            // .ease("linear")
-                            .attr("stroke-dashoffset", 0);
-                    });
-                    console.log(airports);
-                });
             });
+        }
+
+    }
+    window.visualizations.push(new LinkMap());
 
 
-        })
-
-    });
     function findWithAttr(array, attr, value) {
         for(var i = 0; i < array.length; i += 1) {
             if(array[i][attr] === value) {
@@ -294,29 +337,36 @@
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
             x = (bounds[0][0] + bounds[1][0]) / 2,
-            y = (bounds[0][1] + bounds[1][1]) / 2,
-            scale = .9 / Math.max(dx / width, dy / height),
-            translate = [width / 2 - scale * x, height / 2 - scale * y];
+            y = (bounds[0][1] + bounds[1][1]) / 2;
+        scale = .9 / Math.max(dx / width, dy / height);
+        translate = [width / 2 - scale * x, height / 2 - scale * y];
+        zoomed = true;
 
         g.transition()
-            .duration(750)
+            .duration(250)
             .style("stroke-width", 1.5 / scale + "px")
             .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+        svg.selectAll("circle, .flight")
+            .transition()
+            .attr("duration", 4000)
+            .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
+            .attr("r", "2px")
+        ;
     }
 
     function reset() {
         active.classed("active", false);
         active = d3.select(null);
-
+        zoomed = false;
         g.transition()
-            .duration(750)
+            .duration(250)
             .style("stroke-width", "1.5px")
             .attr("transform", "");
+        svg.selectAll("circle, .flight")
+            .transition()
+            .attr("duration", 5000)
+            .attr("transform", "")
+            .attr("r", "4px")
+        ;
     }
-
-    function percentageToHsl(percentage, hue0, hue1) {
-        var hue = (percentage * (hue1 - hue0)) + hue0;
-        return 'hsl(' + hue + ', 100%, 50%)';
-    }
-
 })();

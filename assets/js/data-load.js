@@ -6,7 +6,7 @@
         if (error) throw error;
         d3.json(dataPath + "top-airports.json", function (error, topAirports) {
             if (error) throw error;
-            d3.csv(dataPath + "2008-compressed.csv", function (error, flights) {
+            d3.csv(dataPath + "2008-1-compressed.csv", function (error, flights) {
                 if (error) throw error;
 
                 var projection = d3.geoAlbers();
@@ -146,16 +146,16 @@
                             else f.stdDelay = f.DepDelay;
                             return f;
                         });
-
+                    
                     const mapper = f => {
-                        f.source = f.Origin;
-                        f.target = f.Dest;
+                        f.source = "$" + f.Origin;
+                        f.target = "$" + f.Dest;
                         f.value = Math.round(Math.sqrt(f.stdDelay));
                         return f;
                     };
-
+                    
                     var averageEdgeDataR = routeAverages.map(mapper);
-
+                    
                     var averageEdgeDataFN = fnumAverages.map(mapper);
 
                     var edgeData = flights.map(mapper);
