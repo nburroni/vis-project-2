@@ -15,44 +15,46 @@
                 var topAirportsByIata = d3.map(topAirports, a => a.iata);
                 airports = airports.filter(a => topAirportsByIata.get(a.iata));
 
-                let apFilters = d3.select("#filters")
-                    .append("div")
-                    .attr("id", "airport-filters")
-                    .attr("class", "row");
+                var placeFilters = function () {
+                    let apFilters = d3.select("#filters")
+                        .append("div")
+                        .attr("id", "airport-filters")
+                        .attr("class", "row");
 
-                apFilters.append.append("select")
-                    .attr("id", "ap-select")
-                    .attr("multiple", "multiple")
-                    .selectAll("option")
-                    .data(airports).enter()
-                    .append("option")
-                    .attr("value", d => d.iata)
-                    .html(d => d.airport);
+                    apFilters.append.append("select")
+                        .attr("id", "ap-select")
+                        .attr("multiple", "multiple")
+                        .selectAll("option")
+                        .data(airports).enter()
+                        .append("option")
+                        .attr("value", d => d.iata)
+                        .html(d => d.airport);
 
-                const select = $('select#ap-select');
-                select.multiselect({
-                    maxHeight: 500,
-                    includeSelectAllOption: true,
-                    enableFiltering: true,
-                    filterBehavior: 'both',
-                    enableCaseInsensitiveFiltering: true,
-                    onChange: function(option, checked, select) {
-                        console.log('Changed option ' + $(option).val() + '.');
-                    },
-                    onSelectAll: function() {
-                        console.log('All selected!');
-                    },
-                    onDeselectAll: function() {
-                        console.log('All DEselected!');
-                    }
-                });
-                select.multiselect('selectAll', false);
-                select.multiselect('updateButtonText');
+                    const select = $('select#ap-select');
+                    select.multiselect({
+                        maxHeight: 500,
+                        includeSelectAllOption: true,
+                        enableFiltering: true,
+                        filterBehavior: 'both',
+                        enableCaseInsensitiveFiltering: true,
+                        onChange: function (option, checked, select) {
+                            console.log('Changed option ' + $(option).val() + '.');
+                        },
+                        onSelectAll: function () {
+                            console.log('All selected!');
+                        },
+                        onDeselectAll: function () {
+                            console.log('All DEselected!');
+                        }
+                    });
+                    select.multiselect('selectAll', false);
+                    select.multiselect('updateButtonText');
 
-                let timeFilters = d3.select("#filters")
-                    .append("div")
-                    .attr("id", "time-filters")
-                    .attr("class", "row");
+                    let timeFilters = d3.select("#filters")
+                        .append("div")
+                        .attr("id", "time-filters")
+                        .attr("class", "row");
+                };
 
                 var crunchData = function () {
                     var nodeData = airports.map(d => {
@@ -163,6 +165,9 @@
 
                     window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
                 };
+
+                if (d3.select("#filters").size() > 0)
+                    placeFilters();
 
                 crunchData();
 
