@@ -14,4 +14,7 @@
     window.defaultHslScale = (percentage) => percentageToHsl(percentage, 120, 0);
     window.defaultPastelHslScale = (percentage) => percentageToPastelHsl(percentage, 120, 0);
 
+    window.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    window.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 })();

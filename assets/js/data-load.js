@@ -1,16 +1,15 @@
 (function () {
 
     const dataPath = "/data/";
+    let selectedMonth = 1;
 
-    d3.csv(dataPath + "airports.csv", function (error, airports) {
-        if (error) throw error;
-        d3.json(dataPath + "top-airports.json", function (error, topAirports) {
+    load();
+
+    function load() {
+        d3.csv(dataPath + "airports.csv", function (error, airports) {
             if (error) throw error;
-            d3.csv(dataPath + "2008-1-compressed.csv", function (error, flights) {
+            d3.json(dataPath + "top-airports.json", function (error, topAirports) {
                 if (error) throw error;
-
-                var projection = d3.geoAlbers();
-                projection.scale(990);
 
                 var topAirportsByIata = d3.map(topAirports, a => a.iata);
                 airports = airports.filter(a => topAirportsByIata.get(a.iata));
@@ -36,41 +35,54 @@
                     const select = $('select#ap-select');
                     select.multiselect({
                         maxHeight: 500,
+                        buttonWidth: 150,
                         includeSelectAllOption: true,
                         enableFiltering: true,
                         filterBehavior: 'both',
                         enableCaseInsensitiveFiltering: true,
                         onChange: function (option, checked, select) {
-                            let iatas = $('#airport-filters option:selected').toArray().map(o =>
-                                o.value
-                            );
+                            let iatas = $('#airport-filters option:selected').toArray().map(o => o.value);
                             let filteredAirports = [];
-                            iatas.forEach(sIata => {
-                                filteredAirports = filteredAirports.concat(airports.filter(a => a.iata == sIata))
-                            });
+                            iatas.forEach(sIata => filteredAirports = filteredAirports.concat(airports.filter(a => a.iata == sIata)));
                             crunchData(filteredAirports);
                         },
                         onSelectAll: function () {
                             crunchData(airports)
-                        },
-                        onDeselectAll: function () {
-                            console.log('All DEselected!');
                         }
                     });
                     select.multiselect('selectAll', false);
                     select.multiselect('updateButtonText');
 
-                    let timeFilters = d3.select("#filters")
-                        .append("div")
-                        .attr("id", "time-filters")
-                        .attr("class", "row");
+                    let monthFilter = apFilters.append("div").attr("class", "col-md-3");
+
+                    monthFilter.append("span").html("Month: ");
+                    monthFilter.append("select")
+                        .attr("id", "month")
+                        .attr("class", "form-control")
+                        .on("change", () => {
+                                selectedMonth = parseInt(d3.select("select#month").property("value"));
+                                loadFlights();
+                            }
+                        )
+                        .selectAll("option")
+                        .data(d3.range(1, 12)).enter()
+                        .append("option")
+                        .attr("value", m => m)
+                        .html(m => monthNames[m - 1])
+                        .each(function(m) {
+                            if (selectedMonth == m) d3.select(this).attr("selected", true)
+                        });
+
                 };
 
-                var crunchData = function (airports) {
+                var crunchData = function (airports, flights) {
+                    var projection = d3.geoAlbers();
+                    projection.scale(990);
+
                     airports = airports.filter(a => topAirportsByIata.get(a.iata));
                     let airportsByIata = d3.map(airports, a => a.iata);
 
-                    filteredFlights = flights
+                    let filteredFlights = flights
                         .filter(f => airportsByIata.get(f.Origin) || airportsByIata.get(f.Dest))
                         .map(f => {
                             if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
@@ -156,16 +168,16 @@
                             else f.stdDelay = f.DepDelay;
                             return f;
                         });
-                    
+
                     const mapper = f => {
                         f.source = "$" + f.Origin;
                         f.target = "$" + f.Dest;
                         f.value = Math.round(Math.sqrt(f.stdDelay));
                         return f;
                     };
-                    
+
                     var averageEdgeDataR = routeAverages.map(mapper);
-                    
+
                     var averageEdgeDataFN = fnumAverages.map(mapper);
 
                     var edgeData = filteredFlights.map(mapper);
@@ -176,11 +188,16 @@
                 if (d3.select("#filters").size() > 0)
                     placeFilters();
 
-                crunchData(airports);
+                var loadFlights = function () {
+                    d3.csv(`${dataPath}2008-${selectedMonth}-compressed.csv`, function (error, flights) {
+                        if (error) throw error;
+                        crunchData(airports, flights);
+                    });
+                };
 
+                loadFlights();
             });
         });
-    });
-
+    }
 
 })();

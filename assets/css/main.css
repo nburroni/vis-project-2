@@ -83,3 +83,8 @@ text {
     background-color: #f1f1f1;
     border-radius: 5px;
 }
+
+select#month {
+    width: 150px;
+    display: inline-block;
+}
