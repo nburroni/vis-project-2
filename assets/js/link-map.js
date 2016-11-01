@@ -11,22 +11,14 @@
     var path = d3.geoPath()
         .projection(projection);
 
-    var svg = d3.select("#map").append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
-    svg.append("rect")
-        .attr("class", "background")
-        .attr("width", width)
-        .attr("height", height)
-        .on("click", reset);
+    var svg;
 
     var div = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
 
-    var g = svg.append("g")
-        .style("stroke-width", "1.5px");
+    var g;
+
     var scale;
     var translate;
     var zoomed = false;
@@ -37,6 +29,20 @@
             super("LinkMap");
         }
         setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
+            console.log ("started set data");
+            d3.selectAll("#link-map").remove();
+            svg = d3.select("#map").append("svg")
+                .attr("id", "link-map")
+                .attr("width", width)
+                .attr("height", height);
+            svg.append("rect")
+                .attr("class", "background")
+                .attr("width", width)
+                .attr("height", height)
+                .on("click", reset);
+            g = svg.append("g")
+                .style("stroke-width", "1.5px");
+
             d3.json("/data/us.json", function (error, us) {
                 console.log ("Got airports");
                 if (error) throw error;
@@ -46,7 +52,7 @@
                     .enter().append("path")
                     .attr("d", path)
                     .attr("class", "feature")
-                .on("click", clicked); //TODO uncomment for zoom
+                .on("click", clicked);
 
                 g.append("path")
                     .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
@@ -350,8 +356,7 @@
             .transition()
             .attr("duration", 4000)
             .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
-            .attr("r", "2px")
-        ;
+            .attr("r", "2px");
     }
 
     function reset() {
