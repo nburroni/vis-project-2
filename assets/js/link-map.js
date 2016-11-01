@@ -251,8 +251,10 @@
                                     return colors[i];
                                 })
                                 .attr("transform", function (){
-                                    var j = d;
-                                    return "translate("+ d3.event.pageX + "," + d3.event.pageY + ")";
+                                    coordinates = d3.mouse(this);
+                                    var x = coordinates[0];
+                                    var y = coordinates[1];
+                                    return "translate("+ x + "," + y + ")";
                                 });
 
                             chart.on('mouseenter', function (d, i){
@@ -275,10 +277,11 @@
                                 .attrTween("d", arcTweenEnter);
 
                             groupChart.append("text")
-                                .attr("x", function(d) { return d3.event.pageX; })
-                                .attr("y", function (d) { return d3.event.pageY + 20; })
-                                .attr("dy", ".35em")
+                                .attr("x", function(d) { return d3.mouse(this)[0]; })
+                                .attr("y", function (d) { return d3.mouse(this)[1]; })
                                 .attr("font-family", "sans-serif")
+                                .attr("width", '40px')
+                                .attr("word-wrap", "break-word")
                                 .style("text-anchor", "middle")
                                 .attr( "fill-opacity", 0 ).transition().delay(500)
                                 .attr( "fill-opacity", 1 )
