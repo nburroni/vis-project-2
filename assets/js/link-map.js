@@ -1,6 +1,6 @@
 (function () {
 
-    var width = 900,
+    var width = 960,
         height = 500,
         active = d3.select(null);
 
