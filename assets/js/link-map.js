@@ -140,10 +140,11 @@
                     }
                     // for each of the arrays in the results
                     // draw a line between the subdivions points for that edge
+                    const depTimeStr = flight.CRSDepTime.toString();
                     var path = g.append("path")
                         .attr("d", d3line(edge_subpoint_data))
                         .style("stroke-width", 1)
-                        .attr("class", flight.Origin + " " + flight.Dest + " flight")
+                        .attr("class", `${flight.Origin} ${flight.Dest} flight hour-filter h${depTimeStr.substring(0,depTimeStr.length - 2)} ${dayNameShort(flight.DayOfWeek - 1)}`)
                         // .style("stroke", percentageToHsl((delay / maxDelay) * 100, 120, 0))
                         .style("stroke", percentageToHsl((delay / maxDelay), 120, 0))
                         .style("fill", "none")

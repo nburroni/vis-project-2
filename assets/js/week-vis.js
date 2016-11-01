@@ -1,7 +1,5 @@
 (function () {
 
-    const dayNameShort = (i) => dayNames[i].substring(0, 3);
-
     const height = 500,
         width = 900,
         padding = 50,
@@ -55,7 +53,7 @@
                 .attr("y", hourStart)
                 .attr("height", hourEnd - hourStart)
                 .attr("fill", "#dcdcdc")
-                .classed("hour-of-day", true);
+                .classed("hour-filter", true);
 
             let drawWeekLines = function () {
                 svg.append("g")
@@ -66,20 +64,20 @@
 
                 svg.select("g.axis").selectAll("text")
                     .on("click", h => {
-                        const selection = svg.selectAll(`.hour-of-day.h${h}`);
+                        const selection = d3.selectAll(`.hour-filter.h${h}`);
                         selection.classed("clicked", !selection.classed("clicked"));
                     })
                     .on("mouseover", h => {
-                        if (svg.selectAll('.hour-of-day.clicked').size() > 0)
-                            svg.selectAll(`.hour-of-day.h${h}`).transition(`2${h}`).duration(opTranDuration).attr("opacity", 1);
+                        if (d3.selectAll('.hour-filter.clicked').size() > 0)
+                            d3.selectAll(`.hour-filter.h${h}`).transition(`2${h}`).duration(opTranDuration).attr("opacity", 1);
                         else
-                            svg.selectAll(`.hour-of-day:not(.clicked):not(.h${h})`).transition(`0${h}`).duration(opTranDuration).attr("opacity", .2);
+                            d3.selectAll(`.hour-filter:not(.clicked):not(.h${h})`).transition(`0${h}`).duration(opTranDuration).attr("opacity", .05);
                     })
                     .on("mouseout", h => {
-                        if (svg.selectAll('.hour-of-day.clicked').size() > 0)
-                            svg.selectAll(`.hour-of-day:not(.clicked).h${h}`).transition(`1${h}`).duration(opTranDuration).attr("opacity", .2);
+                        if (d3.selectAll('.hour-filter.clicked').size() > 0)
+                            d3.selectAll(`.hour-filter:not(.clicked).h${h}`).transition(`1${h}`).duration(opTranDuration).attr("opacity", .05);
                         else
-                            svg.selectAll(`.hour-of-day`).transition(`3${h}`).duration(opTranDuration).attr("opacity", 1);
+                            d3.selectAll(`.hour-filter`).transition(`3${h}`).duration(opTranDuration).attr("opacity", 1);
                     });
 
                 svg.append("g")
@@ -135,13 +133,32 @@
                     return v;
                 })).enter()
                 .append("rect")
-                .attr("class", d => `hour-of-day h${d.hour}`)
+                .attr("class", d => `hour-filter hour-of-day ${dayNameShort(d.day - 1)} h${d.hour}`)
                 .attr("opacity", 1)
                 .attr("x", d => dayScale(d.day))
                 .attr("y", d => hourScale(d.hour - 0.5))
                 .attr("width", d => dayScale(d.day + 1) - dayScale(d.day))
                 .attr("height", d => hourScale(d.hour + 0.5) - hourScale(d.hour - 0.5))
-                .attr("fill", d => defaultPastelHslScale(d.value.avgDelay / 60));
+                .attr("fill", d => defaultPastelHslScale(d.value.avgDelay / 60))
+                .on("click", d => {
+                    const selection = d3.selectAll(`.hour-filter.h${d.hour}.${dayNameShort(d.day - 1)}`);
+                    selection.classed("clicked", !selection.classed("clicked"));
+                })
+                .on("mouseover", d => {
+                    if (d3.selectAll('.hour-filter.clicked').size() > 0)
+                        d3.selectAll(`.hour-filter.h${d.hour}.${dayNameShort(d.day - 1)}`).transition(`4${d.hour}`).duration(opTranDuration).attr("opacity", 1);
+                    else {
+                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}):not(.${dayNameShort(d.day - 1)})`).transition(`5${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}).${dayNameShort(d.day - 1)}`).transition(`8${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                        d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}:not(.${dayNameShort(d.day - 1)})`).transition(`9${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                    }
+                })
+                .on("mouseout", d => {
+                    if (d3.selectAll('.hour-filter.clicked').size() > 0)
+                        d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}.${dayNameShort(d.day - 1)}`).transition(`6${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                    else
+                        d3.selectAll(`.hour-filter`).transition(`7${d.hour}`).duration(opTranDuration).attr("opacity", 1);
+                });
 
             drawWeekLines();
 
@@ -151,7 +168,7 @@
                 .text("Clear selection")
                 .classed("hoverable", true)
                 .on("click", () => {
-                    svg.selectAll(`.hour-of-day`).classed("clicked", false).transition(`clear`).duration(opTranDuration).attr("opacity", 1);
+                    d3.selectAll(`.hour-filter`).classed("clicked", false).transition(`clear`).duration(opTranDuration).attr("opacity", 1);
                 })
 
         }
