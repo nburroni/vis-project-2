@@ -17,4 +17,6 @@
     window.dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     window.monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+    window.dayNameShort = (i) => dayNames[i].substring(0, 3);
+
 })();
