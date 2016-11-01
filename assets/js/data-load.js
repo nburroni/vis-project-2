@@ -198,10 +198,8 @@
 
                                 window.visualizations.forEach(vis => vis.setData(airports, filteredFlights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection, weatherEvents))
                             };
+                            crunchData();
                         });
-
-
-                        crunchData();
                     });
                 };
 
