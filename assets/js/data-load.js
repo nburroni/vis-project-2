@@ -41,10 +41,17 @@
                         filterBehavior: 'both',
                         enableCaseInsensitiveFiltering: true,
                         onChange: function (option, checked, select) {
-                            console.log('Changed option ' + $(option).val() + '.');
+                            let iatas = $('#airport-filters option:selected').toArray().map(o =>
+                                o.value
+                            );
+                            let filteredAirports = [];
+                            iatas.forEach(sIata => {
+                                filteredAirports = filteredAirports.concat(airports.filter(a => a.iata == sIata))
+                            });
+                            crunchData(filteredAirports);
                         },
                         onSelectAll: function () {
-                            console.log('All selected!');
+                            crunchData(airports)
                         },
                         onDeselectAll: function () {
                             console.log('All DEselected!');
@@ -59,7 +66,19 @@
                         .attr("class", "row");
                 };
 
-                var crunchData = function () {
+                var crunchData = function (airports) {
+                    airports = airports.filter(a => topAirportsByIata.get(a.iata));
+                    let airportsByIata = d3.map(airports, a => a.iata);
+
+                    filteredFlights = flights
+                        .filter(f => airportsByIata.get(f.Origin) || airportsByIata.get(f.Dest))
+                        .map(f => {
+                            if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
+                            else if (f.DepDelay > 60) f.stdDelay = 60;
+                            else f.stdDelay = f.DepDelay;
+                            return f;
+                        });
+
                     var nodeData = airports.map(d => {
                         var p = projection([parseFloat(d.long), parseFloat(d.lat)]);
                         d.x = p[0];
@@ -69,7 +88,7 @@
                     });
 
                     var flightApKeys = {};
-                    flights.forEach(f => {
+                    filteredFlights.forEach(f => {
                         let routeKey = f.Origin + "-" + f.Dest;
                         let routeKeyAlt = f.Dest + "-" + f.Origin;
                         if (!flightApKeys[routeKeyAlt]) {
@@ -89,7 +108,7 @@
                     });
 
                     var flightNumberKeys = {};
-                    flights.forEach(f => {
+                    filteredFlights.forEach(f => {
                         let fNum = f.FlightNum;
                         if (!flightNumberKeys[fNum]) {
                             flightNumberKeys[fNum] = Object.assign({}, f);
@@ -121,7 +140,7 @@
                     }
 
                     routeAverages = routeAverages
-                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
+                        .filter(f => airportsByIata.get(f.Origin) && airportsByIata.get(f.Dest))
                         .map(f => {
                             if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
                             else if (f.DepDelay > 60) f.stdDelay = 60;
@@ -130,16 +149,7 @@
                         });
 
                     fnumAverages = fnumAverages
-                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
-                        .map(f => {
-                            if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
-                            else if (f.DepDelay > 60) f.stdDelay = 60;
-                            else f.stdDelay = f.DepDelay;
-                            return f;
-                        });
-
-                    flights = flights
-                        .filter(f => topAirportsByIata.get(f.Origin) && topAirportsByIata.get(f.Dest))
+                        .filter(f => airportsByIata.get(f.Origin) && airportsByIata.get(f.Dest))
                         .map(f => {
                             if (f.DepDelay == "NA" || f.DepDelay < 0) f.stdDelay = 0;
                             else if (f.DepDelay > 60) f.stdDelay = 60;
@@ -158,15 +168,15 @@
 
                     var averageEdgeDataFN = fnumAverages.map(mapper);
 
-                    var edgeData = flights.map(mapper);
+                    var edgeData = filteredFlights.map(mapper);
 
-                    window.visualizations.forEach(vis => vis.setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
+                    window.visualizations.forEach(vis => vis.setData(airports, filteredFlights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
                 };
 
                 if (d3.select("#filters").size() > 0)
                     placeFilters();
 
-                crunchData();
+                crunchData(airports);
 
             });
         });

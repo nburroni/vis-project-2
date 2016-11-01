@@ -12,11 +12,6 @@
         hourEnd = padding + weekHeight;
 
     const opTranDuration = 250;
-
-    const svg = d3.select("#week").append("svg")
-        .attr("width", width)
-        .attr("height", height);
-
     class WeekVis extends Visualization {
 
         constructor() {
@@ -24,8 +19,13 @@
         }
 
         setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
-
+            d3.select("#week svg").remove();
             let sorting = (a, b) => d3.ascending(parseInt(a), parseInt(b));
+
+            const svg = d3.select("#week").append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
 
             let dailyHourAvg = d3.nest()
                 // .key(f => f.Month).sortKeys(sorting)
