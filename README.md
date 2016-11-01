@@ -13,7 +13,7 @@ With each passing year, flights are becoming more and more important in people's
 
 We wanted to create a visualization dashboard that would allow airline passengers to get a sense of when and under what conditions it may be best to take a flight, looking at the delays these suffer. We intend to answer questions such as: 
 * "Should I expect more delays on a 5pm flight than on an 8am flight?"
-* "There is a big thunderstorm near my origin airport. Will my flight probably get delayed?"
+* "There is lightning near my origin airport. Will my flight probably get delayed?"
 * "Do flights on this route generally have big delays?".
 
 #### Datasets
@@ -60,26 +60,27 @@ The user can click on whole hours or specific hours in a day to compare the sele
 
 #### Weather Heat Map
 The user can discover correlations between climatic events and the amount of delay in airports due to weather conditions. This information is divided in states, where the dots indicate the different type of weather events distinguished by their colors, and the states, which are also divided by colors, depending on the total amount of delayed they experienced.
+
 #### Visualization Tasks
-#####Analyze
-Our visualization also achieves the task of analyzing the data. More in particular, the user can consume the data shown in the visualizations. This data already existed, but it was processed so the user can discover, present or enjoy. He/she may be interested in showing people the actual panorama of flight delays, or it may be in his/her interest to analyze the data in order to know more about a yet not understood aspect of flight itineraries. 
-#####Discover
-Users can also discover new information, mainly through the week and weather visualizations. For example, if wanting to prove a theory which states that flights in the afternoon usually get more delays, the week visualization would help to discover that that theory is true.
-#####Present
-A user may also want to present to others something already known. For example, using the link map visualization, the user may present to others all the connections between cities. It’s important to say that in this case, the knowledge communicated is already known by the recipient. Interaction is also important while presenting the data. The user may hover over an airport in order to emphasize on the links of that particular airport.
-#####Enjoy
-Users that doesn’t form part of the target audience can also enjoy the visualization. Many people, although they don’t have any discovering or presenting purpose while using the vis, can use it for simply learning about the us flight system, or just play around with the flights. 
-#####Lookup
+##### Analyze
+Our visualization achieves the task of analyzing the data. More in particular, the user can consume the data shown in the visualizations. This data already existed, but it was processed so the user can discover, present or enjoy. He/she may be interested in showing people the actual panorama of flight delays, or it may be in his/her interest to analyze the data in order to know more about a yet not understood aspect of flight itineraries. 
+##### Discover
+Users can discover new information, mainly through the week and weather visualizations. For example, if wanting to prove a theory which states that flights in the afternoon usually get more delays, the week visualization would help to discover that that theory is true.
+##### Present
+A user may want to present to others something already known. For example, using the link map visualization, the user may present to others all the connections between cities. It’s important to say that in this case, the knowledge communicated is already known by the recipient. Interaction is also important while presenting the data. The user may hover over an airport in order to emphasize on the links of that particular airport.
+##### Enjoy
+Users that don’t form part of the target audience can enjoy the visualization. Many people, although they don’t have any discovering or presenting purpose while using the vis, can use it simply to learn about the US flight system, or just play around with the flights. 
+##### Lookup
 This task may be one of the most influential in our visualizations. If a user already knows which airport he/she wants to look into, they just have to remember where it is located geographically, and will get all the delay information from there.
-#####Derive
+##### Derive
 In order to make the week visualization, we had to go over some transformations over the dataset. We went from a list of flights to the delays depending of the hour and the day of the week. This shows a clear derivation from the original data. The same can be seen in the weather visualization, where the average weather delay was calculated using the list of flights, and then displayed using a color scale.
-#####Browse
+##### Browse
 In other cases, the user doesn’t know exactly what he/she wants. Keeping up with the last example, the user may use the airport filter in order to see in the map only the selected airports. 
-#####Compare
+##### Compare
 By selecting different month options, the user can compare between them. This has only one disadvantage, and is the fact that the two visualizations can’t be seen simultaneously. The user can also compare delays and weather events by hovering on the week’s visualization hours. This also gives the ability to compare between different times of the day, and also between different days of the week. 
 Another clear example of comparison can be seen in the weather visualization. Here, the user can compare the relation between weather events like tornadoes or lightning, and the delay airports experience at the same time. 
-#####Summarize
-These visualizations include highly dense data-sets, so we had to make sure that we didn’t go too specific in the data we were showing, in order to grant the user the possibility to give an overview of the situation. This is why we made averages of the data monthly, so the user can get general insight for every month. Nevertheless, we left friendly interactions for the user to quickly filter the data shown and get more deep results.
+##### Summarize
+These visualizations include highly dense data-sets, so we had to make sure that we didn’t go too specific in the data we were showing, in order to grant the user the possibility to give an overview of the situation. This is why we made averages of the data monthly, so the user can get general insight for every month. Nevertheless, we left friendly interactions for the user to quickly filter the data shown and get more detailed results.
 #### Interactive Techniques
 ##### Animation
 We include animations on load and when the user hovers or clicks on items to provide a smooth experience
@@ -105,3 +106,17 @@ We kindly ask for you to use Chrome, which is what we used while developing, and
 
 #### 4. You're all set!
 You can now explore the visualization dashboard.
+
+### Who Did What
+* [Federico Ruiz](https://github.com/fedex995)
+  * Initial dataset compression and cleanup. Calculation of top airports and removal of bad data.
+  * Link-node Map: Interaction; node hover and click, airport delay circle.
+  * Weather Heat Map. Visualization.
+  * Visualization and filters integration.
+
+* [Nicolas Burroni](https://github.com/nburroni)
+  * Project structure, visualization class structure.
+  * Data loading, data mapping for visualization algorithms. Data filters.
+  * Link-node Map: Rendering; map drawing, node placement, edge rendering with force-directed edge bundling.
+  * Week Heat Map. Visualization and interaction between week heat map and map visualizations.
+  * Visualization and filters integration.
