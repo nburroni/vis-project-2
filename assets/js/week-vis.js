@@ -1,7 +1,5 @@
 (function () {
 
-    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
     const dayNameShort = (i) => dayNames[i].substring(0, 3);
 
     const height = 800,
