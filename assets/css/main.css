@@ -39,6 +39,22 @@ div.tooltip {
     fill: none;
     stroke: #bbb;
 }
+.transparency{
+    opacity: 0.0;
+    -webkit-transition: opacity 1000ms;
+    -moz-transition: opacity 1000ms;
+    -ms-transition: opacity 1000ms;
+    -o-transition: opacity 1000ms;
+    transition: opacity 1000ms;
+}
+.not-transparency{
+    opacity: 1;
+    -webkit-transition: opacity 1000ms;
+    -moz-transition: opacity 1000ms;
+    -ms-transition: opacity 1000ms;
+    -o-transition: opacity 1000ms;
+    transition: opacity 1000ms;
+}
 
 text {
     font-family: sans-serif;
