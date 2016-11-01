@@ -33,6 +33,9 @@ We used NOAA's Severe Weather Data Inventory to map weather events during 2008 t
 > BEGIN_YEARMONTH, BEGIN_DAY, BEGIN_TIME, END_YEARMONTH, END_DAY, END_TIME, EPISODE_ID, EVENT_ID, STATE, STATE_FIPS, YEAR, MONTH_NAME, EVENT_TYPE, county, lat, lon
 
 ### The Visualizations
+#### [Click to watch video](https://www.youtube.com/watch?v=jEJiiYTUw6U)
+[![Project Video](https://img.youtube.com/vi/jEJiiYTUw6U/0.jpg)](https://www.youtube.com/watch?v=jEJiiYTUw6U)
+
 #### Inspiration
 [Force‐Directed Edge Bundling for Graph Visualization](http://onlinelibrary.wiley.com/doi/10.1111/j.1467-8659.2009.01450.x/full)
 > Holten, Danny, and Jarke J. Van Wijk. "Force‐Directed Edge Bundling for Graph Visualization." Computer graphics forum. Vol. 28. No. 3. Blackwell Publishing Ltd, 2009.
