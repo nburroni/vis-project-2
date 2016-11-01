@@ -75,7 +75,7 @@
 
                 };
 
-                var crunchData = function (airports, flights) {
+                var crunchData = function (airports, flights, weatherEvents) {
                     var projection = d3.geoAlbers();
                     projection.scale(990);
 
@@ -182,7 +182,7 @@
 
                     var edgeData = filteredFlights.map(mapper);
 
-                    window.visualizations.forEach(vis => vis.setData(airports, filteredFlights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection))
+                    window.visualizations.forEach(vis => vis.setData(airports, filteredFlights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection, weatherEvents))
                 };
 
                 if (d3.select("#filters").size() > 0)
@@ -191,7 +191,10 @@
                 var loadFlights = function () {
                     d3.csv(`${dataPath}2008-${selectedMonth}-compressed.csv`, function (error, flights) {
                         if (error) throw error;
-                        crunchData(airports, flights);
+                        d3.csv(`${dataPath}weather/2008-${selectedMonth}-weather.csv`, function (errorWeather, weatherEvents) {
+                            if (errorWeather) throw errorWeather;
+                            crunchData(airports, flights, weatherEvents);
+                        });
                     });
                 };
 

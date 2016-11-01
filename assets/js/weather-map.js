@@ -21,9 +21,9 @@
 
     class WeatherMap extends Visualization {
         constructor() {
-            super("LinkMap");
+            super("WeatherMap");
         }
-        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
+        setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection, weatherEvents) {
             console.log ("started set data");
             d3.selectAll("#weather-map").remove();
             svg = d3.select("#map").append("svg")
@@ -33,20 +33,26 @@
             svg.append("rect")
                 .attr("class", "background")
                 .attr("width", width)
-                .attr("height", height)
-                .on("click", reset);
+                .attr("height", height);
+                //.on("click", reset);
             g = svg.append("g")
-                .style("stroke-width", "0.8px");
-            d3.json("/data/us.json", function (error, us) {
+                .style("stroke-width", "0.5px");
+            d3.json("/data/county.json", function (error, us) {
                 g.selectAll("path")
-                    .data(topojson.feature(us, us.objects.counties).features)
+                    .data(topojson.feature(us, us.objects.county).features)
                     .enter().append("path")
                     .attr("d", path)
                     .attr("class", "feature");
                 g.append("path")
-                    .datum(topojson.mesh(us, us.objects.counties, (a, b) => a !== b))
+                    .datum(topojson.mesh(us, us.objects.county, (a, b) => a !== b))
                     .attr("class", "mesh")
                     .attr("d", path);
+                
+                g.selectAll('path')
+                    .filter(function(d) {
+                        return d.id == "02013"
+                    })
+                    .style('fill', 'red')
             });
         }
 
