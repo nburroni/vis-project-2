@@ -332,6 +332,8 @@
                         }
 
                     });
+
+                d3.select('#loader').classed('hidden', true);
             });
         }
 
