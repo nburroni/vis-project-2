@@ -76,7 +76,7 @@
                     stateCodesList.forEach(function (d) {
                         states.push({name: d.name, code: d.code, count: 0, delay: 0});
                     });
-                    calculateStateDelays(flights, airports, states);
+                    states = calculateStateDelays(flights, airports, states);
 
                     function update() {
                         options = [];
@@ -86,13 +86,13 @@
                             }
                         });
                         var events = [];
-                        events = filterEvents(weatherEvents, options);
+                        events = filterEvents(weatherEvents, options, states);
                         var filteredStates = [];
                         filterStates(events, filteredStates, states);
                         draw(events, filteredStates, us);
                     }
 
-                    d3.selectAll(".checkbox").on("change", update);
+                    d3.selectAll(".weather-checkbox").on("change", update);
                     update();
                 });
             });
@@ -193,11 +193,18 @@
         return -1;
     }
 
-    function filterEvents(weatherEvents, options) {
-        return weatherEvents.filter(function (d) {
+    function filterEvents(weatherEvents, options, states) {
+        var temp = weatherEvents.filter(function (d) {
             var found = false;
             options.forEach(function (option) {
                 if (option == d.EVENT_TYPE) found = true;
+            });
+            return found;
+        });
+        return temp.filter(function (d){
+            var found = false;
+            states.forEach(function (state) {
+                if (state.name.toLowerCase() == d.STATE.toLowerCase()) found = true;
             });
             return found;
         });
@@ -242,6 +249,7 @@
         states.forEach(function (d, i) {
             d.delay /= d.count;
         });
+        return states;
     }
 
     function clicked(d) {
