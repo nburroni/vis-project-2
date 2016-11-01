@@ -154,7 +154,8 @@
                         d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}).${dayNameShort(d.day - 1)}`).classed("transparency", false).classed("not-transparency", false).transition(`8${d.hour}`).duration(opTranDuration).attr("opacity", .05);
                         d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}:not(.${dayNameShort(d.day - 1)})`).classed("transparency", false).classed("not-transparency", false).transition(`9${d.hour}`).duration(opTranDuration).attr("opacity", .05);
                     }
-                    hoveringOver(`${dayNameShort(d.day - 1)} ${d.hour} hs`)
+                    const avgDelay = Math.round(d.value.avgDelay);
+                    hoveringOver(`${dayNameShort(d.day - 1)} ${d.hour} hs, Avg Delay: ${avgDelay == 60 ? "60+" : avgDelay} min`)
                 })
                 .on("mouseout", d => {
                     if (d3.selectAll('.hour-filter.clicked').size() > 0)

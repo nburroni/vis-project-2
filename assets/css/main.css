@@ -78,10 +78,10 @@ text {
 }
 
 #filters {
-    margin: 15px;
+    margin: 0 15px 15px;
     padding: 10px;
-    background-color: #f1f1f1;
-    border-radius: 5px;
+    background-color: #e6e6e6;
+    border-radius: 0 0 5px 5px;
 }
 
 select#month {
@@ -146,10 +146,10 @@ select#month {
 
 #dashboard > #title {
     text-align: center;
-    margin: 15px;
+    margin: 15px 15px 0;
     padding: 10px;
     background-color: #f6f6f6;
-    border-radius: 5px;
+    border-radius: 5px 5px 0 0;
 }
 
 #dashboard > #title h1 {
