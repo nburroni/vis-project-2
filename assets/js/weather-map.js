@@ -140,9 +140,9 @@
             .attr("r", "3px")
             .attr("fill", function (d, i){
                 var event = events[i];
-                if (event.EVENT_TYPE == "Tornado") return "rgb(51, 102, 204)";
-                else if (event.EVENT_TYPE == "Lightning") return "rgb(153, 0, 153)";
-                else return "rgb(23, 190, 207)";
+                if (event.EVENT_TYPE == "Tornado") return "rgb(107, 174, 214)";
+                else if (event.EVENT_TYPE == "Lightning") return "rgb(148, 103, 189)";
+                else return "rgb(231, 150, 156)";
             })
             .attr("opacity", 1);
 
@@ -160,9 +160,9 @@
             .attr("r", "3px")
             .attr("fill", function (d, i){
                 var event = events[i];
-                if (event.EVENT_TYPE == "Tornado") return "rgb(51, 102, 204)";
-                else if (event.EVENT_TYPE == "Lightning") return "rgb(153, 0, 153)";
-                else return "rgb(23, 190, 207)";
+                if (event.EVENT_TYPE == "Tornado") return "rgb(107, 174, 214)";
+                else if (event.EVENT_TYPE == "Lightning") return "rgb(148, 103, 189)";
+                else return "rgb(231, 150, 156)";
             })
             .attr("opacity", 0)
             .transition()
