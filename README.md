@@ -40,10 +40,36 @@ We used NOAA's Severe Weather Data Inventory to map weather events during 2008 t
 We based one of our visualizations on this edge bundling technique. It helped reduce cluttering of the many thousands of edges we obtained with the chosen datasets. Nevertheless, filtering by the user is still required to get a more detailed view. This edge bundling technique also provides a good way to visualize high-level patterns in the data, such as traffic and general delays between areas or clusters of airports.
 
 #### Link-node Map
+This map can provide a high-level overview of flight delays
+![Map Full](samples/map-1.png)
+
+The user can zoom in to see the edges and nodes with more detail
+![Map Zoom](samples/map-2.png)
+
+The user can click on a node to get information about the amount and specific types of delays that airport suffers from
+![Map Click](samples/map-3.png)
 
 #### Week Heat Map
+The week visualization allows the user to view the average delays per hour per day
+![Week Full](samples/week-1.png)
+
+The user can click on whole hours or specific hours in a day to compare the selected values
+![Week Filtered](samples/week-2.png)
+
+*Greyed out areas are hours for which there were no flights*
 
 #### Weather Heat Map
+
+#### Visualization Tasks
+
+#### Interactive Techniques
+##### Animation
+We include animations on load and when the user hovers or clicks on items to provide a smooth experience
+##### Select Elements
+The user may select airports or different hours to visualize those selected in specific. Hovering also removes clutter and focuses the view on what the user is hovering over by highlighting related items.
+##### Navigate
+The user can zoom and pan the map visualizations to provide greater detail. The user is unconstrained as in they can zoom and pan freely on the maps.
+
 
 ### How To Run
 #### 1. Download the project source code
