@@ -15,10 +15,10 @@
 div.tooltip {
     position: absolute;
     text-align: center;
-    height: 28px;
+    height: 48px;
     padding: 5px;
     font: 12px sans-serif;
-    background: lightsteelblue;
+    background: #ded9db;
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
@@ -140,7 +140,7 @@ select#month {
     display: none;
 }
 
-#dashboard > div:not(#filters):not(#title) {
+#dashboard > div:not(#filters):not(#title):not(.checkboxes) {
     display: inline-block;
 }
 
@@ -154,4 +154,14 @@ select#month {
 
 #dashboard > #title h2 {
     color: #5f5f5f;
+}
+.checkboxes{
+    margin-left: 120px;
+    display: block ;
+}
+.inline{
+    display: inline-block;
+}
+label{
+    margin-right: 20px;
 }

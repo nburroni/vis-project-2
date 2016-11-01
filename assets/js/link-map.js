@@ -194,7 +194,7 @@
                             console.log (d3.event.pageX + " " + d3.event.pageY);
                             var airport = globalAirports[i];
                             var labels = ['CarrierDelay','WeatherDelay','NASDelay','SecurityDelay','LateAircraftDelay'];
-                            var colors = ['rgb(255, 153, 51)', 'rgb(0, 0, 204)', 'rgb(102, 204, 0)', 'rgb(153, 153, 255)', 'rgb(255, 255, 51)'];
+                            var colors = ['rgb(68, 215, 168)', 'rgb(0, 35, 102)', 'rgb(49, 120, 115)', 'rgb(133, 0, 137)', 'rgb(255, 255, 51)'];
                             var dataset = [airport.CarrierDelay, airport.WeatherDelay, airport.NASDelay, airport.SecurityDelay, airport.LateAircraftDelay];
                             var total = airport.CarrierDelay + airport.WeatherDelay + airport.NASDelay + airport.SecurityDelay + airport.LateAircraftDelay;
                             var currentAngle = 0;
@@ -249,6 +249,9 @@
                                     else if (Math.pow((x - d[0]), 2) + Math.pow((y - d[1]), 2) > Math.pow(70, 2)) {
                                         svg.selectAll(".arc-path, text")
                                             .classed("transparency", true);
+                                        div.transition()
+                                            .duration(500)
+                                            .style("opacity", 0);
                                         setTimeout(() => svg.selectAll(".pie").remove(), 1000);
                                     }
                                 });
@@ -274,7 +277,7 @@
                             chart.on('mouseenter', function (d, i){
                                     div.transition()
                                         .duration(200)
-                                        .style("opacity", .9);
+                                        .style("opacity", 1);
                                     div	.html(labels[i] + '</br>' + Math.floor(dataset[i]) + ' mins')
                                         .style("display", "inline-block")
                                         .style("left", (d3.event.pageX) + "px")
@@ -292,13 +295,14 @@
 
                             groupChart.append("text")
                                 .attr("x", function(d) { return d3.mouse(this)[0]; })
-                                .attr("y", function (d) { return d3.mouse(this)[1]; })
+                                .attr("y", function (d) { return d3.mouse(this)[1] + 90; })
+                                .attr("font-size", "18px")
+                                .attr("font-weight", "bold")
                                 .attr("font-family", "sans-serif")
-                                .attr("width", '40px')
-                                .attr("word-wrap", "break-word")
                                 .style("text-anchor", "middle")
                                 .attr( "fill-opacity", 0 ).transition().delay(500)
                                 .attr( "fill-opacity", 1 )
+                                .attr("pointer-events", "none")
                                 .text(function(d) {
                                     return airport.airport;
                                 });

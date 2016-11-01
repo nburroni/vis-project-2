@@ -14,11 +14,22 @@
 
 <div id="dashboard">
     <div id="filters"></div>
-    <div id="map"></div>
-    <div>
-        <input type="checkbox" id="tornadoCheckBox">
-        <label>Tornado</label>
+    <div id="weather"></div>
+    <div class="checkboxes">
+        <div class="inline">
+            <label>Tornado</label>
+            <input type="checkbox" id="tornadoCheckBox" class="checkbox">
+        </div>
+        <div class="inline">
+            <label>Hail</label>
+            <input type="checkbox" id="hailCheckBox" class="checkbox">
+        </div>
+        <div class="inline">
+            <label>Lightning</label>
+            <input type="checkbox" id="lightningCheckBox" class="checkbox">
+        </div>
     </div>
+
 
 
 </div>
@@ -30,7 +41,6 @@
 <script type="text/javascript" src="/external/fdeb/d3-ForceEdgeBundling.js"></script>
 <script type="text/javascript" src="/assets/js/main.js"></script>
 <script type="text/javascript" src="/assets/js/visualization.js"></script>
-<script type="text/javascript" src="/external/d3CheckBox.js"></script>
 <script type="text/javascript" src="/assets/js/weather-map.js"></script>
 <script type="text/javascript" src="/assets/js/data-load.js"></script>
 
