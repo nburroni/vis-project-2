@@ -27,7 +27,7 @@
                 // .key(f => f.Month).sortKeys(sorting)
                 .key(f => f.DayOfWeek).sortKeys(sorting)
                 .key(f => {
-                    let hourStr = f.CRSDepTime.substring(0, f.CRSDepTime.length - 2);
+                    let hourStr = f.CRSDepTime.toString().substring(0, f.CRSDepTime.toString().length - 2);
                     return hourStr == "" ? "0" : hourStr;
                 }).sortKeys(sorting)
                 .rollup((hourData) => {
