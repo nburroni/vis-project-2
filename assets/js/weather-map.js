@@ -24,8 +24,9 @@
         constructor() {
             super("WeatherMap");
         }
+
         setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection, weatherEvents) {
-            console.log ("started set data");
+            console.log("started set data");
 
             d3.selectAll("#weather-map").remove();
             svg = d3.select("#weather").append("svg")
@@ -36,7 +37,7 @@
                 .attr("class", "background")
                 .attr("width", width)
                 .attr("height", height);
-                //.on("click", reset);
+            //.on("click", reset);
             g = svg.append("g")
                 .style("stroke-width", "0.5px");
             zoom = d3.zoom()
@@ -60,7 +61,7 @@
                     .attr("class", "mesh")
                     .attr("d", path)
                     .attr("fill", "none");
-                d3.json("/data/state-codes.json", function (error, stateCodes){
+                d3.json("/data/state-codes.json", function (error, stateCodes) {
                     var stateCodesList = [];
                     var options = [];
                     var names = [
@@ -68,19 +69,19 @@
                         {id: 'tornadoCheckBox', name: "Tornado"},
                         {id: 'lightningCheckBox', name: "Lightning"}
                     ];
-                    for (var key in stateCodes){
+                    for (var key in stateCodes) {
                         stateCodesList.push({name: stateCodes[key].name, code: stateCodes[key].stateAbbr});
                     }
                     var states = [];
-                    stateCodesList.forEach(function (d){
+                    stateCodesList.forEach(function (d) {
                         states.push({name: d.name, code: d.code, count: 0, delay: 0});
                     });
                     calculateStateDelays(flights, airports, states);
 
-                    function update(){
+                    function update() {
                         options = [];
-                        names.forEach(function (d){
-                            if(d3.select("#" + d.id).property("checked")) {
+                        names.forEach(function (d) {
+                            if (d3.select("#" + d.id).property("checked")) {
                                 options.push(d.name)
                             }
                         });
@@ -90,7 +91,8 @@
                         filterStates(events, filteredStates, states);
                         draw(events, filteredStates, us);
                     }
-                    d3.selectAll(".checkbox").on("change",update);
+
+                    d3.selectAll(".checkbox").on("change", update);
                     update();
                 });
             });
@@ -100,13 +102,13 @@
     }
     window.visualizations.push(new WeatherMap());
 
-    function draw(events, states, us){
+    function draw(events, states, us) {
         // g.selectAll("circle")
         //     .transition()
         //     .duration(750)
         //     .remove();
 
-        var maxDelay = Math.max.apply(Math, states.map(function(d){
+        var maxDelay = Math.max.apply(Math, states.map(function (d) {
             return d.delay;
         }));
 
@@ -116,29 +118,29 @@
 
 
         g.selectAll('path')
-            .filter(function(d) {
+            .filter(function (d) {
                 return d.properties;
             })
             .transition()
             .delay(750)
-            .style('fill', function (d){
+            .style('fill', function (d) {
                 if (states[findWithAttr(states, "name", d.properties.NAME10)]) return percentageToHsl((states[findWithAttr(states, "name", d.properties.NAME10)].delay / maxDelay), 120, 0);
                 else return '#ccc';
             });
 
         var selection = g.selectAll("circle")
             .data(coordinates)
-            .attr("class", function (d, i){
+            .attr("class", function (d, i) {
                 var event = events[i];
-                var date = new Date(event.YEAR, event.BEGIN_YEARMONTH.substring(event.BEGIN_YEARMONTH.length -2), event.BEGIN_DAY);
+                var date = new Date(event.YEAR, event.BEGIN_YEARMONTH.substring(event.BEGIN_YEARMONTH.length - 2), event.BEGIN_DAY);
                 var day = date.getDay();
                 if (day == 0) day = 7;
-                return `hour-filter h${event.BEGIN_TIME.substring(0,event.BEGIN_TIME.length - 2)} ${dayNameShort(day - 1)}`
+                return `hour-filter h${event.BEGIN_TIME.substring(0, event.BEGIN_TIME.length - 2)} ${dayNameShort(day - 1)}`
             })
             .attr("cx", d => d[0])
             .attr("cy", d => d[1])
             .attr("r", "3px")
-            .attr("fill", function (d, i){
+            .attr("fill", function (d, i) {
                 var event = events[i];
                 if (event.EVENT_TYPE == "Tornado") return "rgb(107, 174, 214)";
                 else if (event.EVENT_TYPE == "Lightning") return "rgb(148, 103, 189)";
@@ -148,23 +150,29 @@
 
         selection.enter()
             .append("circle")
-            .attr("class", function (d, i){
+            .attr("class", function (d, i) {
                 var event = events[i];
-                var date = new Date(event.YEAR, event.BEGIN_YEARMONTH.substring(event.BEGIN_YEARMONTH.length -2), event.BEGIN_DAY);
+                var date = new Date(event.YEAR, event.BEGIN_YEARMONTH.substring(event.BEGIN_YEARMONTH.length - 2), event.BEGIN_DAY);
                 var day = date.getDay();
                 if (day == 0) day = 7;
-                return `hour-filter h${event.BEGIN_TIME.substring(0,event.BEGIN_TIME.length - 2)} ${dayNameShort(day - 1)}`
+                return `hour-filter h${event.BEGIN_TIME.substring(0, event.BEGIN_TIME.length - 2)} ${dayNameShort(day - 1)}`
             })
             .attr("cx", d => d[0])
             .attr("cy", d => d[1])
             .attr("r", "3px")
-            .attr("fill", function (d, i){
+            .attr("fill", function (d, i) {
                 var event = events[i];
                 if (event.EVENT_TYPE == "Tornado") return "rgb(107, 174, 214)";
                 else if (event.EVENT_TYPE == "Lightning") return "rgb(148, 103, 189)";
                 else return "rgb(231, 150, 156)";
             })
             .attr("opacity", 0)
+            .on("mouseover", (d, i) => {
+                    let event = events[i];
+                    hoveringOver(`${event.EVENT_TYPE}, ${event.BEGIN_TIME.substring(0, event.BEGIN_TIME.length - 2)}:${event.BEGIN_TIME.substring(event.BEGIN_TIME.length - 2)}`);
+                }
+            )
+            .on("mouseout", d => hoveringOut())
             .transition()
             .delay(750)
             .attr("opacity", 1);
@@ -172,42 +180,46 @@
         selection.exit().transition()
             .delay(750)
             .remove();
-        console.log ("finished draw");
+        console.log("finished draw");
 
     }
+
     function findWithAttr(array, attr, value) {
-        for(var i = 0; i < array.length; i += 1) {
-            if(array[i][attr].toLowerCase() === value.toLowerCase()) {
+        for (var i = 0; i < array.length; i += 1) {
+            if (array[i][attr].toLowerCase() === value.toLowerCase()) {
                 return i;
             }
         }
         return -1;
     }
-    function filterEvents (weatherEvents, options){
-        return weatherEvents.filter(function (d){
+
+    function filterEvents(weatherEvents, options) {
+        return weatherEvents.filter(function (d) {
             var found = false;
-            options.forEach(function (option){
+            options.forEach(function (option) {
                 if (option == d.EVENT_TYPE) found = true;
             });
             return found;
         });
     }
-    function filterStates(weatherEvents, result, states){
-        states.forEach(function (d){
+
+    function filterStates(weatherEvents, result, states) {
+        states.forEach(function (d) {
             var index = findWithAttr(weatherEvents, "STATE", d.name);
-            if (index > -1){
+            if (index > -1) {
                 result.push(d);
             }
         });
     }
-    function calculateStateDelays(flights, airports, states){
-        flights.forEach(function (d){
+
+    function calculateStateDelays(flights, airports, states) {
+        flights.forEach(function (d) {
             var flight = d;
-            for (var j in flight){
+            for (var j in flight) {
                 if (j != "Origin" && j != "Dest" && j != "TailNum") flight[j] = parseInt(flight[j]);
             }
             var airport = airports[findWithAttr(airports, "iata", flight.Origin)];
-            if (airport){
+            if (airport) {
                 if (!airport.flightCount) {
                     airport.flightCount = 0;
                     airport.WeatherDelay = 0;
@@ -216,21 +228,22 @@
                 airport.WeatherDelay += (flight.WeatherDelay);
             }
         });
-        airports.forEach(function (d){
+        airports.forEach(function (d) {
             var index = findWithAttr(states, "code", d.state);
-            if(index > -1){
+            if (index > -1) {
                 d.WeatherDelay /= d.flightCount;
                 states[index].delay += d.WeatherDelay;
                 states[index].count++;
             }
         });
-        states = states.filter(function (d){
+        states = states.filter(function (d) {
             return d.count > 0;
         });
-        states.forEach(function (d, i){
+        states.forEach(function (d, i) {
             d.delay /= d.count;
         });
     }
+
     function clicked(d) {
         if (active.node() === this) return reset();
         active.classed("active", false);
@@ -247,7 +260,7 @@
         svg.transition()
             .duration(750)
             // .call(zoom.translate(translate).scale(scale).event); // not in d3 v4
-            .call( zoom.transform, d3.zoomIdentity.translate(translate[0],translate[1]).scale(scale) ); // updated for d3 v4
+            .call(zoom.transform, d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)); // updated for d3 v4
     }
 
     function reset() {
@@ -257,7 +270,7 @@
         svg.transition()
             .duration(750)
             // .call( zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1) ); // not in d3 v4
-            .call( zoom.transform, d3.zoomIdentity ); // updated for d3 v4
+            .call(zoom.transform, d3.zoomIdentity); // updated for d3 v4
     }
 
     function zoomed() {
