@@ -140,6 +140,18 @@ select#month {
     display: none;
 }
 
-#dashboard > div:not(#filters) {
+#dashboard > div:not(#filters):not(#title) {
     display: inline-block;
+}
+
+#dashboard > #title {
+    text-align: center;
+    margin: 15px;
+    padding: 10px;
+    background-color: #f6f6f6;
+    border-radius: 5px;
+}
+
+#dashboard > #title h2 {
+    color: #5f5f5f;
 }

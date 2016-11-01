@@ -19,4 +19,9 @@
 
     window.dayNameShort = (i) => dayNames[i].substring(0, 3);
 
+    window.hoveringOver = (s) => d3.select("#dashboard #title h2").html(s);
+    window.hoveringOut = () => d3.select("#dashboard #title h2").html("Hover over airports or hours");
+
+    hoveringOut();
+
 })();

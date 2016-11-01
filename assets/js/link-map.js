@@ -177,14 +177,17 @@
                     .attr("r", "4px")
                     .attr("fill", "#00deff")
                     .on("mouseover", function (d, i){
-                        svg.selectAll("path.flight:not(." + airports[i].iata + ")")
+                        const airport = airports[i];
+                        svg.selectAll("path.flight:not(." + airport.iata + ")")
                             .classed("transparency", true)
                             .classed("not-transparency", false);
+                        hoveringOver(`${airport.airport} (${airport.iata}), ${airport.city}, ${airport.state}`)
                     })
                     .on("mouseleave", function (d, i){
                         svg.selectAll("path.flight:not(." + airports[i].iata + ")")
                             .classed("transparency", false)
                             .classed("not-transparency", true);
+                        hoveringOut()
                     })
                     .on("click", function (d, i){
                         if (!svg.selectAll(".pie")._groups[0].length > 0){

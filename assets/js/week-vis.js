@@ -69,15 +69,17 @@
                     })
                     .on("mouseover", h => {
                         if (d3.selectAll('.hour-filter.clicked').size() > 0)
-                            d3.selectAll(`.hour-filter.h${h}`).transition(`2${h}`).duration(opTranDuration).attr("opacity", 1);
+                            d3.selectAll(`.hour-filter.h${h}`).classed("transparency", false).classed("not-transparency", false).transition(`2${h}`).duration(opTranDuration).attr("opacity", 1);
                         else
-                            d3.selectAll(`.hour-filter:not(.clicked):not(.h${h})`).transition(`0${h}`).duration(opTranDuration).attr("opacity", .05);
+                            d3.selectAll(`.hour-filter:not(.clicked):not(.h${h})`).classed("transparency", false).classed("not-transparency", false).transition(`0${h}`).duration(opTranDuration).attr("opacity", .05);
+                        hoveringOver(`${h} hs`)
                     })
                     .on("mouseout", h => {
                         if (d3.selectAll('.hour-filter.clicked').size() > 0)
                             d3.selectAll(`.hour-filter:not(.clicked).h${h}`).transition(`1${h}`).duration(opTranDuration).attr("opacity", .05);
                         else
                             d3.selectAll(`.hour-filter`).transition(`3${h}`).duration(opTranDuration).attr("opacity", 1);
+                        hoveringOut();
                     });
 
                 svg.append("g")
@@ -146,18 +148,20 @@
                 })
                 .on("mouseover", d => {
                     if (d3.selectAll('.hour-filter.clicked').size() > 0)
-                        d3.selectAll(`.hour-filter.h${d.hour}.${dayNameShort(d.day - 1)}`).transition(`4${d.hour}`).duration(opTranDuration).attr("opacity", 1);
+                        d3.selectAll(`.hour-filter.h${d.hour}.${dayNameShort(d.day - 1)}`).classed("transparency", false).classed("not-transparency", false).transition(`4${d.hour}`).duration(opTranDuration).attr("opacity", 1);
                     else {
-                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}):not(.${dayNameShort(d.day - 1)})`).transition(`5${d.hour}`).duration(opTranDuration).attr("opacity", .05);
-                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}).${dayNameShort(d.day - 1)}`).transition(`8${d.hour}`).duration(opTranDuration).attr("opacity", .05);
-                        d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}:not(.${dayNameShort(d.day - 1)})`).transition(`9${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}):not(.${dayNameShort(d.day - 1)})`).classed("transparency", false).classed("not-transparency", false).transition(`5${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                        d3.selectAll(`.hour-filter:not(.clicked):not(.h${d.hour}).${dayNameShort(d.day - 1)}`).classed("transparency", false).classed("not-transparency", false).transition(`8${d.hour}`).duration(opTranDuration).attr("opacity", .05);
+                        d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}:not(.${dayNameShort(d.day - 1)})`).classed("transparency", false).classed("not-transparency", false).transition(`9${d.hour}`).duration(opTranDuration).attr("opacity", .05);
                     }
+                    hoveringOver(`${dayNameShort(d.day - 1)} ${d.hour} hs`)
                 })
                 .on("mouseout", d => {
                     if (d3.selectAll('.hour-filter.clicked').size() > 0)
                         d3.selectAll(`.hour-filter:not(.clicked).h${d.hour}.${dayNameShort(d.day - 1)}`).transition(`6${d.hour}`).duration(opTranDuration).attr("opacity", .05);
                     else
                         d3.selectAll(`.hour-filter`).transition(`7${d.hour}`).duration(opTranDuration).attr("opacity", 1);
+                    hoveringOut()
                 });
 
             drawWeekLines();
