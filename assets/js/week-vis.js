@@ -2,9 +2,9 @@
 
     const dayNameShort = (i) => dayNames[i].substring(0, 3);
 
-    const height = 800,
-        width = 1100,
-        padding = 100,
+    const height = 500,
+        width = 900,
+        padding = 50,
         weekHeight = 400,
         hourStart = padding + 20,
         hourEnd = padding + weekHeight;
@@ -48,6 +48,14 @@
             const hourAxis = d3.axisLeft(hourScale).ticks(24).tickPadding(5).tickFormat(d => d + " hs");
 
             const dayScale = d3.scaleLinear().domain([1, 8]).range([padding, width - padding]);
+
+            svg.append("rect")
+                .attr("x", padding)
+                .attr("width", width - 2 * padding)
+                .attr("y", hourStart)
+                .attr("height", hourEnd - hourStart)
+                .attr("fill", "#dcdcdc")
+                .classed("hour-of-day", true);
 
             let drawWeekLines = function () {
                 svg.append("g")

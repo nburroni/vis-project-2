@@ -1,13 +1,12 @@
 (function () {
 
-    var svg = d3.select("svg"),
-        width = +svg.attr("width"),
-        height = +svg.attr("height");
+    var width = 900,
+        height = 600;
 
     var color = d3.scaleOrdinal(d3.schemeCategory20);
 
     var simulation = d3.forceSimulation()
-        .force("link", d3.forceLink().distance(500).strength(0.75))
+        .force("link", d3.forceLink().distance(300).strength(0.5))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -18,8 +17,20 @@
         }
 
         setData(airports, flights, nodeData, edgeData, routeAverages, averageEdgeDataR, averageEdgeDataFN, projection) {
-            nodeData = nodeData.filter(n => averageEdgeDataR.filter(e => n.iata == e.source || n.iata == e.target).length > 0);
-            var graph = {nodes: nodeData, links: averageEdgeDataR};
+            d3.select("#force").select("svg").remove();
+
+            var svg = d3.select("#force").append("svg")
+                .attr("height", height)
+                .attr("width", width);
+
+            var graph = {
+                nodes: nodeData, links: averageEdgeDataR.map(e => {
+                    let t = Object.assign({}, e);
+                    t.source = t.source.substring(1);
+                    t.target = t.target.substring(1);
+                    return t;
+                })
+            };
 
             var nodes = graph.nodes,
                 nodeById = d3.map(nodes, function (d) {
@@ -58,6 +69,11 @@
                     .on("drag", dragged)
                     .on("end", dragended));
 
+            node.append("title")
+                .html(function (d) {
+                    return d.airport;
+                });
+
             node.append("text")
                 .text(function (d) {
                     return d.id;
@@ -82,31 +98,31 @@
                 link.attr("d", positionLink);
                 node.attr("transform", positionNode);
             }
+
+            function positionLink(d) {
+                return "M" + d[0].x + "," + d[0].y
+                    + "S" + d[1].x + "," + d[1].y
+                    + " " + d[2].x + "," + d[2].y;
+            }
+
+            function positionNode(d) {
+                return "translate(" + d.x + "," + d.y + ")";
+            }
+
+            function dragstarted(d) {
+                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x, d.fy = d.y;
+            }
+
+            function dragged(d) {
+                d.fx = d3.event.x, d.fy = d3.event.y;
+            }
+
+            function dragended(d) {
+                if (!d3.event.active) simulation.alphaTarget(0);
+                d.fx = null, d.fy = null;
+            }
         }
-    }
-
-    function positionLink(d) {
-        return "M" + d[0].x + "," + d[0].y
-            + "S" + d[1].x + "," + d[1].y
-            + " " + d[2].x + "," + d[2].y;
-    }
-
-    function positionNode(d) {
-        return "translate(" + d.x + "," + d.y + ")";
-    }
-
-    function dragstarted(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-        d.fx = d.x, d.fy = d.y;
-    }
-
-    function dragged(d) {
-        d.fx = d3.event.x, d.fy = d3.event.y;
-    }
-
-    function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0);
-        d.fx = null, d.fy = null;
     }
 
     window.visualizations.push(new ForceGraph());
