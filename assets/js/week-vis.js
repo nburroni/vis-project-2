@@ -1,7 +1,7 @@
 (function () {
 
     const height = 500,
-        width = 900,
+        width = 850,
         padding = 50,
         weekHeight = 400,
         hourStart = padding + 20,
