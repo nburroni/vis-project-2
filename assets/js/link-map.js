@@ -10,7 +10,7 @@
 
     var path = d3.geoPath()
         .projection(projection);
-
+    var zoom;
     var svg;
 
     var div = d3.select("body").append("div")
@@ -21,7 +21,7 @@
 
     var scale;
     var translate;
-    var zoomed = false;
+    var isZoomed = false;
     var globalAirports = [];
 
     class LinkMap extends Visualization {
@@ -35,13 +35,23 @@
                 .attr("id", "link-map")
                 .attr("width", width)
                 .attr("height", height);
+
             svg.append("rect")
                 .attr("class", "background")
                 .attr("width", width)
                 .attr("height", height)
                 .on("click", reset);
+
             g = svg.append("g")
                 .style("stroke-width", "1.5px");
+            zoom = d3.zoom()
+            // no longer in d3 v4 - zoom initialises with zoomIdentity, so it's already at origin
+            // .translate([0, 0])
+            // .scale(1)
+                .scaleExtent([1, 8])
+                .on("zoom", zoomed);
+            svg
+                .call(zoom);
 
             d3.json("/data/us.json", function (error, us) {
                 console.log ("Got airports");
@@ -130,7 +140,7 @@
                     }
                     // for each of the arrays in the results
                     // draw a line between the subdivions points for that edge
-                    var path = svg.append("path")
+                    var path = g.append("path")
                         .attr("d", d3line(edge_subpoint_data))
                         .style("stroke-width", 1)
                         .attr("class", flight.Origin + " " + flight.Dest + " flight")
@@ -158,7 +168,7 @@
                     d.SecurityDelay = d.SecurityDelay / d.flightCount;
                     d.LateAircraftDelay = d.LateAircraftDelay / d.flightCount;
                 });
-                svg.selectAll("circle")
+                g.selectAll("circle")
                     .data(coordinates).enter()
                     .append("circle")
                     .attr("cx", d => d[0])
@@ -224,7 +234,7 @@
                                     coordinates = d3.mouse(this);
                                     var x = coordinates[0];
                                     var y = coordinates[1];
-                                    if (zoomed){
+                                    if (isZoomed){
                                         var rectangle = this.getBBox();
                                         if (Math.pow((x - (rectangle.x + rectangle.width/2)), 2) + Math.pow((y - (rectangle.y + rectangle.height/2)), 2) > Math.pow(70, 2)) {
                                             svg.selectAll(".arc-path, text")
@@ -337,6 +347,7 @@
         }
         return -1;
     }
+
     function clicked(d) {
         if (active.node() === this) return reset();
         active.classed("active", false);
@@ -346,35 +357,36 @@
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
             x = (bounds[0][0] + bounds[1][0]) / 2,
-            y = (bounds[0][1] + bounds[1][1]) / 2;
-        scale = .9 / Math.max(dx / width, dy / height);
-        translate = [width / 2 - scale * x, height / 2 - scale * y];
-        zoomed = true;
+            y = (bounds[0][1] + bounds[1][1]) / 2,
+            scale = Math.max(1, Math.min(8, 0.9 / Math.max(dx / width, dy / height))),
+            translate = [width / 2 - scale * x, height / 2 - scale * y];
 
-        g.transition()
-            .duration(250)
-            .style("stroke-width", 1.5 / scale + "px")
-            .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-        svg.selectAll("circle, .flight")
-            .transition()
-            .attr("duration", 4000)
-            .attr("transform", "translate(" + translate + ")scale(" + scale + ")")
-            .attr("r", "2px");
+        svg.transition()
+            .duration(750)
+            // .call(zoom.translate(translate).scale(scale).event); // not in d3 v4
+            .call( zoom.transform, d3.zoomIdentity.translate(translate[0],translate[1]).scale(scale) ); // updated for d3 v4
     }
 
     function reset() {
         active.classed("active", false);
         active = d3.select(null);
-        zoomed = false;
-        g.transition()
-            .duration(250)
-            .style("stroke-width", "1.5px")
-            .attr("transform", "");
-        svg.selectAll("circle, .flight")
-            .transition()
-            .attr("duration", 5000)
-            .attr("transform", "")
-            .attr("r", "4px")
-        ;
+
+        svg.transition()
+            .duration(750)
+            // .call( zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1) ); // not in d3 v4
+            .call( zoom.transform, d3.zoomIdentity ); // updated for d3 v4
     }
+
+    function zoomed() {
+        g.style("stroke-width", 1.5 / d3.event.transform.k + "px");
+        // g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")"); // not in d3 v4
+        g.attr("transform", d3.event.transform); // updated for d3 v4
+    }
+
+// If the drag behavior prevents the default click,
+// also stop propagation so we don’t click-to-zoom.
+    function stopped() {
+        if (d3.event.defaultPrevented) d3.event.stopPropagation();
+    }
+
 })();
