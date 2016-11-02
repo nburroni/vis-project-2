@@ -35,6 +35,8 @@ We used NOAA's Severe Weather Data Inventory to map weather events during 2008 t
 > BEGIN_YEARMONTH, BEGIN_DAY, BEGIN_TIME, END_YEARMONTH, END_DAY, END_TIME, EPISODE_ID, EVENT_ID, STATE, STATE_FIPS, YEAR, MONTH_NAME, EVENT_TYPE, county, lat, lon
 
 ### The Visualizations
+![Dashboard](samples/dashboard.png)
+
 #### [Click to watch video](https://www.youtube.com/watch?v=jEJiiYTUw6U)
 [![Project Video](https://img.youtube.com/vi/jEJiiYTUw6U/0.jpg)](https://www.youtube.com/watch?v=jEJiiYTUw6U)
 
