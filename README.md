@@ -7,7 +7,9 @@
 
 ### The Data
 For this project we chose to show flight delays for domestic flights in the US in the year 2008, filtered by month.
-
+### Dataset Type
+The data represents a network of flights, where the nodes represent the origin and destination airports, while the edges represent the flight itself. We combined this with geometrical data, using the latitude and longitude of the airports to place them in the map. 
+We also derived the data into a table for the week visualization, where the rows represent the time of the day and the columns stand for the day of the week. 
 #### Motivation & Audience
 With each passing year, flights are becoming more and more important in people's lives. Whether it is for business or pleasure, people depend on them to be on time, and delays generally cause inconvenience and discomfort in airline users. By visualizing these delays from different perspectives, we hope to find patterns and possible reasons for the occurrance of these delays, and ideally help towards finding a solution.
 
@@ -33,6 +35,8 @@ We used NOAA's Severe Weather Data Inventory to map weather events during 2008 t
 > BEGIN_YEARMONTH, BEGIN_DAY, BEGIN_TIME, END_YEARMONTH, END_DAY, END_TIME, EPISODE_ID, EVENT_ID, STATE, STATE_FIPS, YEAR, MONTH_NAME, EVENT_TYPE, county, lat, lon
 
 ### The Visualizations
+![Dashboard](samples/dashboard.png)
+
 #### [Click to watch video](https://www.youtube.com/watch?v=jEJiiYTUw6U)
 [![Project Video](https://img.youtube.com/vi/jEJiiYTUw6U/0.jpg)](https://www.youtube.com/watch?v=jEJiiYTUw6U)
 
