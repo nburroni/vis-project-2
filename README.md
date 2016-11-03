@@ -1,6 +1,8 @@
 # CS 424 Fall 2016 - Visualization & Visual Analytics 1 
 ## Project 2
 
+### [Hosted Project](http://cs424.s3-website-us-east-1.amazonaws.com/)
+
 ### Students
 * [Federico Ruiz](https://github.com/fedex995)
 * [Nicolas Burroni](https://github.com/nburroni)
